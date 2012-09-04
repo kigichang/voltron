@@ -6,6 +6,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.io.UnsupportedEncodingException;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -13,6 +14,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang3.StringUtils;
 
+import xv.voltron.constant.Cache;
 import xv.voltron.constant.Const;
 
 public final class View {
@@ -24,8 +26,9 @@ public final class View {
 							  boolean isCache,
 							  String cacheId) {
 		
-		StringBuffer uri = isCache ? new StringBuffer("/WEB-INF/cache") :
-										new StringBuffer("/WEB-INF");
+		StringBuffer uri = isCache ? new StringBuffer("/WEB-INF/cache") 
+								   : new StringBuffer("/WEB-INF");
+		
 		cacheId = cacheId == null ? "" : (cacheId.trim() + "_");
 		
 		if (method != null) {
@@ -64,25 +67,34 @@ public final class View {
 						String tmpl,
 						boolean isCache,
 						String cacheId) {
+		
 		String tmp = uri(context, servlet, method, tmpl, isCache, cacheId);
 		if (tmp == null) {
 			return null;
 		}
 		
-		tmp = StringUtils.replaceChars(tmp, '/', File.separatorChar);
+		if (File.separatorChar != '/') {
+			tmp = StringUtils.replaceChars(tmp, '/', File.separatorChar);
+		}
 		return (Config.get("app.root") + tmp);
 	}
 	
-	public static String templateUri(String context, String servlet, String method, String tmpl)
-		throws IOException {
+	protected static String templateUri(String context, 
+										String servlet, 
+										String method, 
+										String tmpl)
+		throws ServletException {
+		
 		String tmp = uri(context, servlet, method, tmpl, false, null);
+		
 		if (tmp == null) {
-			throw new IOException(String.format("Uri %s Not Found", tmp));
+			throw new ServletException(String.format("Template Uri Error"));
 		}
+		
 		return tmp;
 	}
 	
-	public static String TemplateFile(HttpServletRequest req) {
+	protected static String TemplateFile(HttpServletRequest req) {
 		String tmpl = (String)req.getAttribute(Const.TEMPLATE);
 		return View.file(req.getContextPath(), 
 						 req.getServletPath(), 
@@ -92,16 +104,21 @@ public final class View {
 						tmpl, false, null);
 	}
 	
-	public static String cacheUri(String context, String servlet, String method, String tmpl, String cacheId) 
-		throws IOException {
+	protected static String cacheUri(String context, 
+									 String servlet, 
+									 String method, 
+									 String tmpl, String cacheId) 
+		throws ServletException {
+		
 		String tmp = uri(context, servlet, method, tmpl, true, cacheId);
 		if (tmp == null) {
-			throw new IOException(String.format("Uri %s Not Found", tmp));
+			throw new ServletException(String.format("Cache Uri Error"));
 		}
+		
 		return tmp;
 	}
 	
-	public static String cacheFile(HttpServletRequest req) {
+	protected static String cacheFile(HttpServletRequest req) {
 		String tmpl = (String)req.getAttribute(Const.TEMPLATE);
 		return View.file(req.getContextPath(), 
 						 req.getServletPath(),
@@ -113,15 +130,10 @@ public final class View {
 						 (String)req.getAttribute(Const.CACHE_ID));
 	}
 	
-	public static String noCacheStart() {
-		return "<!-- VOLTRON_NO_CACHE_START -->";
-	}
-	
-	public static String noCacheEnd() {
-		return "<!-- VOLTRON_NO_CACHE_END -->";
-	}
-	
-	public static boolean isCached(String cacheFile, long expired, long currentTime) {
+	protected static boolean isCached(String cacheFile, 
+									  long expired, 
+									  long currentTime) {
+		
 		File file = new File(cacheFile);
 		if (!file.exists()) {
 			return false;
@@ -130,14 +142,28 @@ public final class View {
 		return (file.lastModified() + expired) < currentTime; 
 	}
 	
-	public static boolean isModified(String tmpl_file, String cache_file) 
+	protected static boolean isCached(String cacheFile, 
+									  String schedule, 
+									  long currentTime) {
+		
+		File file = new File(cacheFile);
+		if (!file.exists()) {
+			return false;
+		}
+		
+		long compute = 0;
+		return (file.lastModified() + compute) < currentTime;
+	}
+	
+	protected static boolean isModified(String tmpl_file, String cache_file) 
 			throws FileNotFoundException {
+		
 		File tmpl = new File(tmpl_file);
 		File cache = new File(cache_file);
 		
 		if (!tmpl.exists()) {
-			throw new FileNotFoundException(String.format("File %s Not Found", 
-														  tmpl_file));
+			throw new FileNotFoundException(
+					String.format("File %s Not Found", tmpl_file));
 		}
 		
 		if (!cache.exists()) {
@@ -147,15 +173,40 @@ public final class View {
 		return tmpl.lastModified() >= cache.lastModified();
 	}
 	
-	public static boolean isCached(String cacheFile, String schedule, long currentTime) {
-		File file = new File(cacheFile);
-		if (!file.exists()) {
-			return false;
+	public static boolean isCached(HttpServletRequest req) 
+			throws FileNotFoundException {
+		
+		Cache cache = (Cache)req.getAttribute(Const.CACHE);
+		
+		if (Cache.LIFETIME.equals(cache) || Cache.SCHEDULE.equals(cache)) {
+			String cache_file = View.cacheFile(req);
+			String tmpl_file = View.TemplateFile(req);
+			
+			if (Cache.LIFETIME.equals(cache)) {
+				return (View.isCached(cache_file,
+							(Long)req.getAttribute(Const.CACHE_LIFETIME), 
+							(Long)req.getAttribute(Const.REQUEST_TIME))
+						&& !View.isModified(tmpl_file, cache_file));
+			}
+			else if (Cache.SCHEDULE.equals(cache)) {
+				return (View.isCached(cache_file, 
+							(String)req.getAttribute(Const.CACHE_SCHEDULE), 
+							(Long)req.getAttribute(Const.REQUEST_TIME))
+						&& !View.isModified(tmpl_file, cache_file));
+			}
 		}
 		
-		long compute = 0;
-		return (file.lastModified() + compute) < currentTime;
+		return false;
 	}
+	
+	public static String noCacheStart() {
+		return "<!-- VOLTRON_NO_CACHE_START -->";
+	}
+	
+	public static String noCacheEnd() {
+		return "<!-- VOLTRON_NO_CACHE_END -->";
+	}
+	
 	public static void draw(HttpServletRequest req, HttpServletResponse resp) 
 			throws ServletException, IOException {
 		
@@ -186,19 +237,38 @@ public final class View {
 				).include(req, resp);
 	}
 	
-	public static void writeCache(String file, String content) {
+	public static boolean writeCache(String file, String content) {
 		BufferedWriter bw = null;
+		boolean ret = false;
 		try {
-			bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), Config.encoding()));
-			bw.append(content);
-		}
-		catch(Exception e) {
+			bw = new BufferedWriter(
+					new OutputStreamWriter(
+						new FileOutputStream(file), Config.encoding()));
 			
+			bw.append(content);
+			bw.close();
+			bw = null;
+			ret = true;
+		} catch (UnsupportedEncodingException e) {
+			// TODO Auto-generated catch block
+			//e.printStackTrace();
+			ret = false;
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			//e.printStackTrace();
+			ret = false;
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			//e.printStackTrace();
+			ret = false;
 		}
+		
 		finally {
 			if (bw != null) {
 				try { bw.close(); } catch(Exception e2){}
 			}
 		}
+		
+		return ret;
 	}
 }

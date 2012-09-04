@@ -210,50 +210,12 @@ public class Action extends HttpServlet {
 			
 			try {
 				beforeAction(req, resp);
-				Cache cache = (Cache)req.getAttribute(Const.CACHE);
-				boolean wrapper = false;
-				if (Cache.LIFETIME.equals(cache) || Cache.SCHEDULE.equals(cache)) {
-					String cache_file = View.cacheFile(req);
-					String tmpl_file = View.cacheFile(req);
-					
-					if (Cache.LIFETIME.equals(cache)) {
-						if (View.isCached(cache_file,
-								(Long)req.getAttribute(Const.CACHE_LIFETIME), 
-								(Long)req.getAttribute(Const.REQUEST_TIME))
-							&& !View.isModified(tmpl_file, cache_file)) {
-							View.cache(req, resp);
-							return;
-						}
-						wrapper = true;
-					}
-					else if (Cache.SCHEDULE.equals(cache)) {
-						if (View.isCached(cache_file, 
-								(String)req.getAttribute(Const.CACHE_SCHEDULE), 
-								(Long)req.getAttribute(Const.REQUEST_TIME))
-							&& !View.isModified(tmpl_file, cache_file)) {
-							View.cache(req, resp);
-							return;
-						}
-						wrapper = true;
-					}
-					if (wrapper) {
-						req.setAttribute(Const.CACHE_FILE, cache_file);
-						resp = new CacheResponse(resp);
-					}
-				}
-				
 				invoke_method.invokeMethod.invoke(this, invoke_param);
 				
 				if (HttpServletResponse.SC_OK == resp.getStatus() 
 						&& (Boolean)req.getAttribute(Const.AUTO_RENDER)) {
 					beforeRender(req, resp);
 					View.draw(req, resp);
-					if (wrapper) {
-						String content = ((CacheResponse)resp).strWriter.toString();
-						String cache_file = (String)req.getAttribute(Const.CACHE_FILE);
-						View.writeCache(cache_file, content);
-						((CacheResponse)resp).orgResp.getWriter().print(content);
-					}
 				}
 			} catch (IllegalAccessException e) {
 				// TODO Auto-generated catch block
