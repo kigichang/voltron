@@ -28,6 +28,13 @@ public final class CacheResponse extends HttpServletResponseWrapper {
 	}
 	
 	
+	public void free() throws IOException {
+		strWriter.close();
+		wrapperWriter.close();
+		strWriter = null;
+		wrapperWriter = null;
+	}
+	
 	
 	
 

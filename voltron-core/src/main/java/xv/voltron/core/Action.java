@@ -219,8 +219,11 @@ public class Action extends HttpServlet {
 				
 				if (HttpServletResponse.SC_OK == resp.getStatus() 
 						&& (Boolean)req.getAttribute(Const.AUTO_RENDER)) {
-					beforeRender(req, resp);
-					if (View.needCache(req)) {
+					
+					if (View.needCache(req) 
+						&& !(Boolean)req.getAttribute(Const.USE_CACHE)) {
+						
+						beforeRender(req, resp);
 						CacheResponse cache_resp = new CacheResponse(resp);
 						View.draw(req, cache_resp);
 						String content = cache_resp.strWriter.toString();
@@ -229,9 +232,11 @@ public class Action extends HttpServlet {
 						if (cache_file != null) {
 							View.writeCache(cache_file, content);
 						}
+						cache_resp.free();
 						cache_resp = null;
 					}
 					else {
+						beforeRender(req, resp);
 						View.draw(req, resp);
 					}
 				}
@@ -353,6 +358,26 @@ public class Action extends HttpServlet {
 	
 	public void template(HttpServletRequest req, String template) {
 		req.setAttribute(Const.TEMPLATE, template);
+	}
+	
+	public void echoCost(HttpServletResponse resp, long startTimeMillis) 
+			throws IOException {
+		
+		long cost = System.currentTimeMillis() - startTimeMillis;
+		resp.getWriter().print(String.format("\r\n<!-- Cost %d ms -->", cost));
+		
+	}
+	
+	public String retrieve(String uri, HttpServletRequest req, HttpServletResponse resp) 
+			throws ServletException, IOException {
+		
+		CacheResponse cache_resp = new CacheResponse(resp);
+		req.getRequestDispatcher(uri).include(req, cache_resp);
+		
+		String content = cache_resp.strWriter.toString();
+		cache_resp.free();
+		cache_resp = null;
+		return content;
 	}
 	
 	@Override

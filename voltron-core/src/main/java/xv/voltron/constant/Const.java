@@ -14,6 +14,8 @@ public final class Const {
 	public static final String CACHE_LIFETIME = "_VOLTRON_CACHE_LIFETIME_";
 	public static final String CACHE_SCHEDULE = "_VOLTRON_CACHE_SCHEDULE_";
 	
+	public static final String USE_CACHE = "_VOLTRON_USE_CACHE_";
+	
 	public static final String NO_CACHE_START = "<!-- VOLTRON_NO_CACHE_START -->";
 	public static final String NO_CACHE_END = "<!-- VOLTRON_NO_CACHE_END -->";
 	
