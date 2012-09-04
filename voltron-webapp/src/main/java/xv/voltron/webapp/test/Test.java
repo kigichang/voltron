@@ -27,7 +27,10 @@ public class Test extends Action {
 			throws ServletException, IOException {
 		req.setAttribute(Const.AUTO_RENDER, false);
 		PrintWriter out = as(resp, "text/html").encoding(resp, "UTF-8").writer(resp);
-		out.println("編碼：" + Config.encoding() + " and Debug = " + Config.debug());
+		/*out.println("encode：" + 
+				Config.encoding() + 
+				" and Debug = " + 
+				Config.debug());*/
 	}
 	
 	@Dispatch(policy=ArgumentPolicy.DEFAULT_NULL, strictLength=1)

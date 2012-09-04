@@ -132,6 +132,7 @@ public class Action extends HttpServlet {
 		req.setAttribute(Const.CACHE, Cache.NONE);
 		req.setAttribute(Const.AUTO_RENDER, true);
 		resp.setCharacterEncoding(Config.encoding());
+		resp.setContentType("text/html");
 		
 		String path_info = req.getPathInfo();
 		
@@ -210,12 +211,29 @@ public class Action extends HttpServlet {
 			
 			try {
 				beforeAction(req, resp);
+				if (View.isCached(req)) {
+					View.cache(req, resp);
+				}
+				
 				invoke_method.invokeMethod.invoke(this, invoke_param);
 				
 				if (HttpServletResponse.SC_OK == resp.getStatus() 
 						&& (Boolean)req.getAttribute(Const.AUTO_RENDER)) {
 					beforeRender(req, resp);
-					View.draw(req, resp);
+					if (View.needCache(req)) {
+						CacheResponse cache_resp = new CacheResponse(resp);
+						View.draw(req, cache_resp);
+						String content = cache_resp.strWriter.toString();
+						resp.getWriter().print(content);
+						String cache_file = View.cacheFile(req);
+						if (cache_file != null) {
+							View.writeCache(cache_file, content);
+						}
+						cache_resp = null;
+					}
+					else {
+						View.draw(req, resp);
+					}
 				}
 			} catch (IllegalAccessException e) {
 				// TODO Auto-generated catch block
@@ -249,8 +267,17 @@ public class Action extends HttpServlet {
 		}
 		else {
 			resp.sendError(HttpServletResponse.SC_NOT_FOUND);
+			return;
 		}
-		methods = null;
+		
+		if (Config.debug()) {
+			resp.getWriter().println(
+				String.format("\r\n<!-- Cost %d ms -->", 
+								System.currentTimeMillis() 
+								- (Long)req.getAttribute(Const.REQUEST_TIME))
+					);
+		}
+		
 	}
 	
 	@Override
@@ -311,6 +338,21 @@ public class Action extends HttpServlet {
 		req.setAttribute(Const.CACHE, Cache.SCHEDULE);
 		req.setAttribute(Const.CACHE_ID, cacheId);
 		req.setAttribute(Const.CACHE_SCHEDULE, schedule);
+	}
+	
+	public void resetCache(HttpServletRequest req) {
+		req.setAttribute(Const.CACHE, Cache.NONE);
+		req.removeAttribute(Const.CACHE_ID);
+		req.removeAttribute(Const.CACHE_LIFETIME);
+		req.removeAttribute(Const.CACHE_SCHEDULE);
+	}
+	
+	public String template(HttpServletRequest req) {
+		return (String) req.getAttribute(Const.TEMPLATE);
+	}
+	
+	public void template(HttpServletRequest req, String template) {
+		req.setAttribute(Const.TEMPLATE, template);
 	}
 	
 	@Override

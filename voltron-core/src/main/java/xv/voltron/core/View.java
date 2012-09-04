@@ -199,12 +199,17 @@ public final class View {
 		return false;
 	}
 	
+	public static boolean needCache(HttpServletRequest req) {
+		Cache cache = (Cache)req.getAttribute(Const.CACHE);
+		return (Cache.LIFETIME.equals(cache) || Cache.SCHEDULE.equals(cache));
+	}
+	
 	public static String noCacheStart() {
-		return "<!-- VOLTRON_NO_CACHE_START -->";
+		return Const.NO_CACHE_START;
 	}
 	
 	public static String noCacheEnd() {
-		return "<!-- VOLTRON_NO_CACHE_END -->";
+		return Const.NO_CACHE_END;
 	}
 	
 	public static void draw(HttpServletRequest req, HttpServletResponse resp) 
