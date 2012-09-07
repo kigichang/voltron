@@ -15,6 +15,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import xv.voltron.annotation.Dispatch;
 import xv.voltron.constant.ArgumentPolicy;
+import xv.voltron.constant.Cache;
 import xv.voltron.constant.Const;
 import xv.voltron.constant.RequestScope;
 
@@ -153,10 +154,10 @@ public class Action extends HttpServlet {
 		
 		/* initialize default variables */
 		req.setAttribute(Const.REQUEST_TIME, System.currentTimeMillis());
-		//req.setAttribute(Const.CACHE, Cache.NONE);
+		req.setAttribute(Const.CACHE, Cache.NONE);
 		req.setAttribute(Const.AUTO_RENDER, true);
-		//resp.setCharacterEncoding(Config.encoding());
-		//resp.setContentType("text/html");
+		resp.setCharacterEncoding(Config.encoding());
+		resp.setContentType("text/html");
 		
 		String path_info = req.getPathInfo();
 		HashMap<String, ActionMethod> methods = 
