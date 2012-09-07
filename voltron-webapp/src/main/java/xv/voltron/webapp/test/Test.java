@@ -14,7 +14,7 @@ import xv.voltron.constant.Const;
 import xv.voltron.core.Action;
 import xv.voltron.core.Config;
 
-@WebServlet(name="Test", urlPatterns="/Test/*")
+@WebServlet(name="Test", urlPatterns="/test1/*")
 public class Test extends Action {
 	
 	/**
@@ -26,7 +26,7 @@ public class Test extends Action {
 	public void List(HttpServletRequest req, HttpServletResponse resp, Integer id) 
 			throws ServletException, IOException {
 		req.setAttribute(Const.AUTO_RENDER, false);
-		PrintWriter out = as(resp, "text/html").encoding(resp, "UTF-8").writer(resp);
+		//PrintWriter out = as(resp, "text/html").encoding(resp, "UTF-8").writer(resp);
 		/*out.println("encode：" + 
 				Config.encoding() + 
 				" and Debug = " + 
@@ -36,10 +36,20 @@ public class Test extends Action {
 	@Dispatch(policy=ArgumentPolicy.DEFAULT_NULL, strictLength=1)
 	public void Edit(HttpServletRequest req, HttpServletResponse resp, Integer id, String val, Long a) 
 			throws ServletException ,IOException {
-		//req.setAttribute(Const.AUTO_RENDER, false);
-		//PrintWriter out = as(resp, "text/html").encoding(resp, "UTF-8").writer(resp);
-		//out.println(String.format("id = %1$d, val = %2$s, a = %3$d", id, val, a));
+		req.setAttribute("id", id);
+		req.setAttribute("val", val);
+		req.setAttribute("a", a);
 		
 	}
-
+	
+	@Dispatch(policy=ArgumentPolicy.DEFAULT_NULL, strictLength=1)
+	public void EditList(HttpServletRequest req, HttpServletResponse resp, Integer id, String val, Long a) 
+			throws ServletException ,IOException {	
+	}
+	
+	@Dispatch
+	public void Index(HttpServletRequest req, HttpServletResponse resp) 
+			throws ServletException ,IOException {	
+	}
+	
 }
