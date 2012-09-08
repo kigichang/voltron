@@ -19,4 +19,8 @@ public final class Const {
 	public static final String NO_CACHE_START = "<!-- VOLTRON_NO_CACHE_START -->";
 	public static final String NO_CACHE_END = "<!-- VOLTRON_NO_CACHE_END -->";
 	
+	
+	public static final String DATA_PREFIX = "Data";
+	public static final String DATA_DEFAULT = "default";
+	
 }

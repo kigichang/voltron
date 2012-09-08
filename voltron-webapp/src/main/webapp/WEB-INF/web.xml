@@ -9,10 +9,26 @@
   	<servlet-class>xv.voltron.core.VoltronStartup</servlet-class>
   	<load-on-startup>1</load-on-startup>
   </servlet>
+  <servlet>
+  	<servlet-name>TestA</servlet-name>
+  	<servlet-class>xv.voltron.webapp.test.TestA</servlet-class>
+  </servlet>
+  <servlet>
+  	<servlet-name>TestB</servlet-name>
+  	<servlet-class>xv.voltron.webapp.test.TestB</servlet-class>
+  </servlet>
+  <servlet-mapping>
+  	<servlet-name>TestA</servlet-name>
+  	<url-pattern>/TestA/*</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+  	<servlet-name>TestB</servlet-name>
+  	<url-pattern>/TestB/*</url-pattern>
+  </servlet-mapping>
 
-<resource-ref>
+  <resource-ref>
 <description>DB Connection</description>
-<res-ref-name>jdbc/test1</res-ref-name>
+<res-ref-name>Data/default</res-ref-name>
 <res-type>javax.sql.DataSource</res-type>
 <res-auth>Container</res-auth>
 </resource-ref>

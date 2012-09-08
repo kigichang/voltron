@@ -3,6 +3,10 @@ package xv.voltron.webapp.test;
 import java.io.IOException;
 import java.io.PrintWriter;
 
+import javax.naming.InitialContext;
+import javax.naming.NameClassPair;
+import javax.naming.NamingEnumeration;
+import javax.naming.NamingException;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -39,6 +43,17 @@ public class Test extends Action {
 		req.setAttribute("id", id);
 		req.setAttribute("val", val);
 		req.setAttribute("a", a);
+		PrintWriter out = resp.getWriter();
+		try {
+			InitialContext ctx = new InitialContext();
+			NamingEnumeration<NameClassPair> e = ctx.list("Data");
+			while(e.hasMoreElements()) {
+				out.println(e.nextElement().getName());
+			}
+		} catch (NamingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		
 	}
 	
