@@ -2,6 +2,10 @@ package xv.voltron.webapp.test;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 
 import javax.naming.InitialContext;
 import javax.naming.NameClassPair;
@@ -17,6 +21,7 @@ import xv.voltron.constant.ArgumentPolicy;
 import xv.voltron.constant.Const;
 import xv.voltron.core.Action;
 import xv.voltron.core.Config;
+import xv.voltron.core.DataManager;
 
 @WebServlet(name="Test", urlPatterns="/test1/*")
 public class Test extends Action {
@@ -43,17 +48,21 @@ public class Test extends Action {
 		req.setAttribute("id", id);
 		req.setAttribute("val", val);
 		req.setAttribute("a", a);
-		PrintWriter out = resp.getWriter();
+		
 		try {
-			InitialContext ctx = new InitialContext();
-			NamingEnumeration<NameClassPair> e = ctx.list("Data");
-			while(e.hasMoreElements()) {
-				out.println(e.nextElement().getName());
+			Connection conn = DataManager.getPersistent();
+			Statement stmt = conn.createStatement();
+			ResultSet rs = stmt.executeQuery("select * from admin where id = 1");
+			if (rs.next()) {
+				req.setAttribute("name", rs.getString("name"));
 			}
-		} catch (NamingException e) {
+			rs.close();
+			stmt.close();
+		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		
 		
 	}
 	

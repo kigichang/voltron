@@ -149,6 +149,9 @@ public final class DataManager {
 	public static void close(Connection conn) {
 		if (conn != null) {
 			try {
+				if (!conn.getAutoCommit()) {
+					conn.commit();
+				}
 				conn.close();
 			} catch (SQLException e) {
 				// TODO Auto-generated catch block
@@ -159,6 +162,9 @@ public final class DataManager {
 	
 	public static void closeWithException(Connection conn) throws SQLException {
 		if (conn != null) {
+			if (!conn.getAutoCommit()) {
+				conn.commit();
+			}
 			conn.close();
 		}
 	}

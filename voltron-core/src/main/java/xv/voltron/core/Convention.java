@@ -30,19 +30,19 @@ public final class Convention {
 	
 	public static String toJavaName(String name) {
 		String tmp = StringUtils.capitalize(name);
+		
 		if (tmp.indexOf('_') > 0) {
-			char[] t = tmp.toCharArray();
 			StringBuffer ret = new StringBuffer();
-			ret.append(t[0]);
-			for (int i = 1, len = t.length; i < len; i++) {
-				if (t[i] == '_') {
+			ret.append(tmp.charAt(0));
+			for (int i = 1, len = tmp.length(); i < len; i++) {
+				if (tmp.charAt(i) == '_') {
 					continue;
 				}
-				if (t[i - 1] == '_') {
-					ret.append(toUpperCase(t[i]));
+				if (tmp.charAt(i - 1) == '_') {
+					ret.append(toUpperCase(tmp.charAt(i)));
 				}
 				else {
-					ret.append(t[i]);
+					ret.append(tmp.charAt(i));
 				}
 			}
 			return ret.toString();
@@ -57,16 +57,15 @@ public final class Convention {
 			return tmp;
 		}
 		
-		char[] t = tmp.toCharArray();
 		StringBuffer ret = new StringBuffer();
-		ret.append(t[0]);
-		for (int i = 1, len = t.length; i < len; i++) {
-			if (isUpperCase(t[i])) {
+		ret.append(tmp.charAt(0));
+		for (int i = 1, len = tmp.length(); i < len; i++) {
+			if (isUpperCase(tmp.charAt(i))) {
 				ret.append('_');
-				ret.append(toLowerCase(t[i]));
+				ret.append(toLowerCase(tmp.charAt(i)));
 			}
 			else {
-				ret.append(t[i]);
+				ret.append(tmp.charAt(i));
 			}
 		}
 		

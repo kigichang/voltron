@@ -304,14 +304,24 @@ public class Action extends HttpServlet {
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp)
 			throws ServletException, IOException {
 		// TODO Auto-generated method stub
-		process(RequestScope.GET, req, resp);
+		try {
+			process(RequestScope.GET, req, resp);
+		}
+		finally {
+			DataManager.freeAllPersisten();
+		}
 	}
 
 	@Override
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp)
 			throws ServletException, IOException {
 		// TODO Auto-generated method stub
-		process(RequestScope.POST, req, resp);
+		try {
+			process(RequestScope.POST, req, resp);
+		}
+		finally {
+			DataManager.freeAllPersisten();
+		}
 	}
 	
 	protected String template(HttpServletRequest req) {

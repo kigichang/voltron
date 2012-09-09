@@ -27,14 +27,6 @@ public class TestA extends HttpServlet {
 			throws ServletException, IOException {
 		// TODO Auto-generated method stub
 		PrintWriter out = resp.getWriter();
-		
-		try {
-			DataManager.getInstance();
-		} catch (NamingException e) {
-				// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
 		try {
 			Connection conn = DataManager.getPersistent();
 			out.println("<br />In A connection : " + conn.hashCode());

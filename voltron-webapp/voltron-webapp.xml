@@ -13,7 +13,6 @@ detected.
 
 <Configure id="Server" class="org.eclipse.jetty.server.Server">
  <New id="test1" class="org.eclipse.jetty.plus.jndi.Resource">
-  	<Arg></Arg>
 	<Arg>Data/default</Arg>
 	<Arg>
 	<New class="com.mysql.jdbc.jdbc2.optional.MysqlConnectionPoolDataSource">

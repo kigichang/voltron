@@ -9,5 +9,6 @@
 </head>
 <body>
 中文測試 id =<%=request.getAttribute("id") %>, val =<%=request.getAttribute("val") %>, a = <%=request.getAttribute("a") %>
+<br />name = <%=request.getAttribute("name") %>
 </body>
 </html>

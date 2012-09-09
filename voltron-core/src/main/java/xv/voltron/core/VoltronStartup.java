@@ -2,6 +2,7 @@ package xv.voltron.core;
 
 import java.io.File;
 
+import javax.naming.NamingException;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 
@@ -38,8 +39,14 @@ public class VoltronStartup extends HttpServlet {
 						String.format("Cache Folder [%s]Is Not Exist",
 									  file.getAbsoluteFile()));
 			}
+			
+			DataManager.getInstance();
 		} catch (ConfigurationException e) {
 			// TODO Auto-generated catch block
+			throw new ServletException(e);
+		} catch (NamingException e) {
+			// TODO Auto-generated catch block
+			//e.printStackTrace();
 			throw new ServletException(e);
 		}
 	}
