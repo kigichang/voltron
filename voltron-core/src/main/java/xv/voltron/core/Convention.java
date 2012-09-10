@@ -1,7 +1,5 @@
 package xv.voltron.core;
 
-import org.apache.commons.lang3.StringUtils;
-
 public final class Convention {
 	
 	public static boolean isUpperCase(char c) {
@@ -27,9 +25,29 @@ public final class Convention {
 		return c;
 	}
 	
+	public static String capitalize(String src) {
+		int len = 0;
+		if (src == null || (len = src.length()) == 0) {
+			return src;
+		}
+		return new StringBuffer(len)
+			.append(toUpperCase(src.charAt(0)))
+			.append(src.substring(1)).toString();
+	}
+	
+	public static String uncapitalize(String src) {
+		int len = 0;
+		if (src == null || (len = src.length()) == 0) {
+			return src;
+		}
+		
+		return new StringBuffer(len)
+			.append(toLowerCase(src.charAt(0)))
+			.append(src.substring(1)).toString();
+	}
 	
 	public static String toJavaName(String name) {
-		String tmp = StringUtils.capitalize(name);
+		String tmp = capitalize(name);
 		
 		if (tmp.indexOf('_') > 0) {
 			StringBuffer ret = new StringBuffer();
@@ -52,7 +70,7 @@ public final class Convention {
 	}
 	
 	public static String toUnderlineName(String name) {
-		String tmp = StringUtils.uncapitalize(name);
+		String tmp = uncapitalize(name);
 		if (tmp.equals(name)) {
 			return tmp;
 		}
