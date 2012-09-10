@@ -5,6 +5,8 @@ import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.util.ArrayList;
 
+import org.apache.commons.lang3.StringUtils;
+
 import xv.voltron.annotation.Table;
 import xv.voltron.constant.ColumnType;
 import xv.voltron.core.data.Column;
