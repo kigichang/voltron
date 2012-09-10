@@ -1,8 +1,6 @@
 package xv.voltron.core.data;
-
-import org.apache.commons.lang.StringUtils;
-
 import xv.voltron.constant.ColumnType;
+import xv.voltron.core.Convention;
 
 public final class Column {
 	protected String name = null;
@@ -11,8 +9,8 @@ public final class Column {
 	protected String defValue = null;
 	protected boolean isPrimary = false;
 	protected boolean isAutoIncrement = false;
-	protected String settor = null;
-	protected String gettor = null;
+	protected String setter = null;
+	protected String getter = null;
 	
 	public Column(String name, 
 				  String fieldName, 
@@ -28,7 +26,8 @@ public final class Column {
 		this.isPrimary = isPrimary;
 		this.isAutoIncrement = isAutoIncrement;
 		
-	
+		setter = "set" + name;
+		getter = (ColumnType.BOOLEAN == type ? "is" : "get") + name;
 		
 	}
 	

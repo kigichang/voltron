@@ -2,17 +2,24 @@ package xv.voltron.core;
 
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
+import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 
 import org.apache.commons.lang3.StringUtils;
 
 import xv.voltron.annotation.Table;
 import xv.voltron.constant.ColumnType;
+import xv.voltron.constant.Const;
 import xv.voltron.core.data.Column;
 
 public abstract class Operate<T> {
 
+	protected static final Class[] EMPTY_CLASS_ARRAY = new Class[0];
+	protected static final Object[] EMPTY_OBJECT_ARRAY = new Object[0];
+	
 	protected Class<T> clazz = null;
 	
 	protected String name = null;
@@ -26,7 +33,19 @@ public abstract class Operate<T> {
 		if (table == null) {
 			throw new SQLException("Table Annotation Not Found");
 		}
-
+		
+		String t_name = table.name();
+		String t_table_name = table.tableName();
+		String t_data_source = table.dataSource();
+		name = "".equals(t_name) ? clazz.getSimpleName() : t_name;
+		tableName = "".equals(t_table_name) ? 
+				Convention.toUnderlineName(name) :
+				t_table_name;
+		
+		dataSource = "".equals(t_data_source) ? 
+				Const.DATA_DEFAULT :
+				t_data_source;
+		
 		this.clazz = clazz;
 		
 		Field[] fields = clazz.getDeclaredFields();
@@ -40,6 +59,16 @@ public abstract class Operate<T> {
 				String f_name = f.name();
 				String f_field_name = f.fieldName();
 				String f_def_val = f.defValue();
+				
+				if ("".equals(f_name)) {
+					f_name = fields[i].getName();
+				}
+				
+				if ("".equals(f_field_name)) {
+					f_field_name = Convention.toUnderlineName(f_name);
+				}
+				
+				
 				ColumnType f_type = null;
 				Class f_tmp = fields[i].getType();
 				
@@ -56,7 +85,10 @@ public abstract class Operate<T> {
 					f_type = ColumnType.LONG;
 				}
 				else if (f_tmp.equals(java.util.Date.class)) {
-					f_type = ColumnType.DATETIME;
+					f_type = ColumnType.DATE;
+				}
+				else if (f_tmp.equals(java.sql.Timestamp.class)) {
+					f_type = ColumnType.TIMESTAMP;
 				}
 				else if (f_tmp.equals(Character.class)) {
 					f_type = ColumnType.CHAR;
@@ -79,7 +111,13 @@ public abstract class Operate<T> {
 								+ f_tmp.getName());
 				}
 				
-				Column col = new Column(f_name, f_field_name, f_type, f_def_val);
+				Column col = new Column(f_name, 
+										f_field_name, 
+										f_type, 
+										f_def_val, 
+										f.isPrimary(), 
+										f.isAutoIncrement());
+				
 				tmp.add(col);
 			}
 		}// for
@@ -87,7 +125,38 @@ public abstract class Operate<T> {
 		columns = tmp.toArray(new Column[tmp.size()]);
 	}
 	
+	protected void closeConnection(Connection conn) {
+		if (conn != null) {
+			try {
+				conn.close();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				//e.printStackTrace();
+			}
+		}
+	}
 	
+	protected void closeStatement(Statement stmt) {
+		if (stmt != null) {
+			try {
+				stmt.close();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				//e.printStackTrace();
+			}
+		}
+	}
+	
+	protected void closeResultSet(ResultSet rs) {
+		if (rs != null) {
+			try {
+				rs.close();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+	}
 	
 	public abstract boolean add(T model) throws SQLException;
 	
