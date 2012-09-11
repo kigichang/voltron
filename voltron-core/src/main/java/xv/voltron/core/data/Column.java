@@ -1,4 +1,9 @@
 package xv.voltron.core.data;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.text.ParseException;
+
 import xv.voltron.constant.ColumnType;
 import xv.voltron.core.Convention;
 
@@ -35,5 +40,12 @@ public final class Column {
 		this(name, fieldName, type, defValue, false, false);
 	}
 	
+	public void setStatement(PreparedStatement stmt, int index, String val) throws SQLException, ParseException {
+		type.setStatement(stmt, index, val);
+	}
+	
+	public Object getResult(ResultSet rs) throws SQLException {
+		return type.getResult(rs, fieldName);
+	}
 	
 }

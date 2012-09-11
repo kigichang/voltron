@@ -1,6 +1,7 @@
 package xv.voltron.core;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -27,6 +28,7 @@ public abstract class Operate<T> {
 	protected String dataSource = null;
 	
 	protected Column[] columns = null;
+	
 	
 	public Operate(Class<T> clazz) throws SQLException {
 		Table table = clazz.getAnnotation(Table.class);
@@ -70,9 +72,21 @@ public abstract class Operate<T> {
 				
 				
 				ColumnType f_type = null;
-				Class f_tmp = fields[i].getType();
+				Class<?> f_tmp = fields[i].getType();
 				
-				if (f_tmp.equals(String.class)) {
+				for (ColumnType ct : ColumnType.values()) {
+					if (ct.compatiable(f_tmp)) {
+						f_type = ct;
+						break;
+					}
+				}
+				
+				if (f_type == null) {
+					tmp.clear();
+					throw new SQLException("Not Support Type " 
+								+ f_tmp.getName());
+				}
+				/*if (f_tmp.equals(String.class)) {
 					f_type = ColumnType.STRING;
 				}
 				else if (f_tmp.equals(BigDecimal.class)) {
@@ -109,7 +123,7 @@ public abstract class Operate<T> {
 					tmp.clear();
 					throw new SQLException("Not Support Type " 
 								+ f_tmp.getName());
-				}
+				}*/
 				
 				Column col = new Column(f_name, 
 										f_field_name, 
@@ -158,7 +172,32 @@ public abstract class Operate<T> {
 		}
 	}
 	
-	public abstract boolean add(T model) throws SQLException;
 	
+	protected Object getValue(Class<? extends Object> clazz, T obj, String func) 
+			throws IllegalAccessException, 
+				   IllegalArgumentException, 
+				   InvocationTargetException, 
+				   NoSuchMethodException, SecurityException {
+		
+		return clazz.getMethod(func).invoke(obj);
+	}
+	
+	protected void setValue(Class<? extends Object> clazz, 
+							T obj, 
+							String func, 
+							Class<? extends Object> valType, 
+							Object val) 
+		throws IllegalAccessException, 
+			   IllegalArgumentException, 
+			   InvocationTargetException, 
+			   NoSuchMethodException, 
+			   SecurityException {
+		
+		clazz.getMethod(func, valType).invoke(obj, val);
+	}
+	
+	public abstract int add(T model) throws SQLException;
+	public abstract int update(T model) throws SQLException;
+	public abstract T[] find(String condition, Object... values) throws SQLException;
 	
 }

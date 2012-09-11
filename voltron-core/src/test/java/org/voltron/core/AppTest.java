@@ -1,5 +1,8 @@
 package org.voltron.core;
 
+import java.text.ParseException;
+
+import xv.voltron.constant.ColumnType;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
@@ -30,9 +33,18 @@ public class AppTest
 
     /**
      * Rigourous Test :-)
+     * @throws ParseException 
      */
-    public void testApp()
+    public void testApp() throws ParseException
     {
         assertTrue( true );
+        ColumnType ct = ColumnType.LONG;
+        
+        Long t = (Long) ct.parseValue("123456789");
+        System.out.println("t = " + t);
+        
+        for(ColumnType ct2 : ColumnType.values()) {
+        	System.out.println(ct2.toString());
+        }
     }
 }
