@@ -5,6 +5,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.math.BigDecimal;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -93,11 +94,7 @@ public class Action extends HttpServlet {
 					.append(".jsp").toString();
 		}
 	}
-	
-	
-	
-	
-	
+	/*
 	protected Object convert(String val, Type type) 
 			throws NumberFormatException {
 		
@@ -146,6 +143,7 @@ public class Action extends HttpServlet {
 		throw new NumberFormatException(
 				String.format("Not Support Type \"%s\"", type.toString()));
 	}
+	*/
 	
 	protected void process(RequestScope scope, 
 						   HttpServletRequest req, 
@@ -221,10 +219,10 @@ public class Action extends HttpServlet {
 							invoke_param_len : req_param_len; 
 				i <= len;
 				invoke_param[i + 1] = 
-						convert(params.get(i), invoke_method.types[i + 1]),
+						invoke_method.types[i + 1].parseValue(params.get(i)),
 				i++);
 		}
-		catch(NumberFormatException e) {
+		catch(ParseException e) {
 			resp.sendError(HttpServletResponse.SC_BAD_REQUEST);
 			if (Config.debug()) { 
 				throw new ServletException(e);
