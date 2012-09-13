@@ -8,7 +8,6 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.ParseException;
 import java.util.ArrayList;
-import xv.voltron.constant.ColumnType;
 import xv.voltron.constant.Const;
 import xv.voltron.constant.DataType;
 import xv.voltron.core.DataManager;
@@ -30,7 +29,7 @@ public class MySQL<T extends Model> extends Operator<T> {
 		// TODO Auto-generated method stub
 		StringBuffer column = 
 				new StringBuffer("INSERT INTO ")
-				.append(tableName).append("(");
+				.append(schema.tableName).append("(");
 		
 		StringBuffer values = 
 				new StringBuffer(" VALUES (");
@@ -43,7 +42,7 @@ public class MySQL<T extends Model> extends Operator<T> {
 		boolean has_auto_increment = false;
 
 		try {
-			for (Column col : columns.values()) {
+			for (Column col : schema.columns.values()) {
 				if (col.isExpression) {
 					continue;
 				}
@@ -147,7 +146,7 @@ public class MySQL<T extends Model> extends Operator<T> {
 	public int update(T model) throws SQLException {
 		// TODO Auto-generated method stub
 		StringBuffer column = new StringBuffer("UPDATE ")
-								.append(tableName)
+								.append(schema.tableName)
 								.append(" SET ");
 		
 		ArrayList<DataType> col_type = new ArrayList<DataType>();
@@ -160,7 +159,7 @@ public class MySQL<T extends Model> extends Operator<T> {
 		boolean has_primary = false;
 		
 		try {
-			for(Column col : columns.values()) {
+			for(Column col : schema.columns.values()) {
 				if (col.isExpression) {
 					continue;
 				}
@@ -181,9 +180,12 @@ public class MySQL<T extends Model> extends Operator<T> {
 				}
 				else {
 					if (Const.FIELD_UPDATED.equals(col.fieldName)) {
-						column.append(col.fieldName).append("=?,");
-						col_type.add(col.type);
-						col_val.add(col.defaultValue());
+						val_tmp = col.defaultValue();
+						if (val_tmp != null) {
+							column.append(col.fieldName).append("=?,");
+							col_type.add(col.type);
+							col_val.add(val_tmp);
+						}
 					}
 				}
 			

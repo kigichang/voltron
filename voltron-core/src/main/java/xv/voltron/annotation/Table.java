@@ -12,7 +12,6 @@ import xv.voltron.constant.Const;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 public @interface Table {
-	String name() default "";
 	String tableName() default "";
 	String dataSource() default Const.DATA_DEFAULT;
 }
