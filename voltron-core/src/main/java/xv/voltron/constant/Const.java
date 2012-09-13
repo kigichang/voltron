@@ -23,4 +23,9 @@ public final class Const {
 	public static final String DATA_PREFIX = "Data";
 	public static final String DATA_DEFAULT = "default";
 	
+	public static final String FIELD_CREATED = "created";
+	public static final String FIELD_UPDATED = "updated";
+	
+	public static final String DEFAULT_TIME_VALUE = "now";
+	
 }

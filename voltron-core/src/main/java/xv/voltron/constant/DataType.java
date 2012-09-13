@@ -38,6 +38,7 @@ public enum DataType implements TypeFunc {
 			// TODO Auto-generated method stub
 			statement.setString(index, (String)val);
 		}
+
 	},
 	
 	BIGDECIMAL(BigDecimal.class) {
@@ -101,7 +102,7 @@ public enum DataType implements TypeFunc {
 			// TODO Auto-generated method stub
 			statement.setInt(index, (Integer)val);
 		}
-		
+
 	},
 	
 	TIMESTAMP(Timestamp.class) {
@@ -159,7 +160,6 @@ public enum DataType implements TypeFunc {
 			// TODO Auto-generated method stub
 			statement.setLong(index, (Long)val);
 		}
-		
 	},
 	
 	FLOAT(Float.class) {
@@ -191,7 +191,7 @@ public enum DataType implements TypeFunc {
 			// TODO Auto-generated method stub
 			statement.setFloat(index, (Float)val);
 		}
-		
+
 	},
 	
 	DOUBLE(Double.class) {
@@ -223,7 +223,6 @@ public enum DataType implements TypeFunc {
 			// TODO Auto-generated method stub
 			statement.setDouble(index, (Double)val);
 		}
-		
 	},
 	
 	DATE(Date.class) {
@@ -249,7 +248,6 @@ public enum DataType implements TypeFunc {
 			// TODO Auto-generated method stub
 			statement.setDate(index, (Date)val);
 		}
-		
 	},
 	
 	TIME(Time.class) {
@@ -275,7 +273,6 @@ public enum DataType implements TypeFunc {
 			// TODO Auto-generated method stub
 			statement.setTime(index, (Time)val);
 		}
-		
 	},
 	CHAR(Character.class) {
 
@@ -308,8 +305,7 @@ public enum DataType implements TypeFunc {
 				throws SQLException {
 			// TODO Auto-generated method stub
 			statement.setString(index, val.toString());
-		}
-		
+		}	
 	},
 	BOOLEAN(Boolean.class) {
 
@@ -348,7 +344,6 @@ public enum DataType implements TypeFunc {
 			// TODO Auto-generated method stub
 			statement.setBoolean(index, (Boolean)val);
 		}
-		
 	};
 	
 	

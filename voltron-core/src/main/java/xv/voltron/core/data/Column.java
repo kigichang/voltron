@@ -1,7 +1,11 @@
 package xv.voltron.core.data;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.sql.Timestamp;
+import java.text.ParseException;
+
 import xv.voltron.annotation.Field;
+import xv.voltron.constant.Const;
 import xv.voltron.constant.DataType;
 import xv.voltron.core.Convention;
 
@@ -46,5 +50,26 @@ public final class Column {
 		setter.invoke(model, val);
 	}
 	
+	public Object defaultValue() throws ParseException {
+		if ("".equals(defValue)) {
+			return null;
+		}
+		else if (Const.DEFAULT_TIME_VALUE.equals(defValue)) {
+			switch(type) {
+			case TIMESTAMP:
+				return new Timestamp(System.currentTimeMillis());
+			case DATE:
+				return new java.sql.Date(System.currentTimeMillis());
+			case TIME:
+				return new java.sql.Time(System.currentTimeMillis());
+			default:
+				return null;
+			}
+		}
+		else {
+			return type.parseValue(defValue);
+		}
+		
+	}
 	
 }

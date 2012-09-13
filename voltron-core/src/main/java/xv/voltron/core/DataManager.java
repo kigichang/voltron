@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Hashtable;
 
 import javax.naming.InitialContext;
 import javax.naming.NameClassPair;
@@ -12,6 +13,7 @@ import javax.naming.NamingException;
 import javax.sql.DataSource;
 
 import xv.voltron.constant.Const;
+import xv.voltron.core.data.Operate;
 
 public final class DataManager {
 	
@@ -21,6 +23,8 @@ public final class DataManager {
 	
 	protected static HashMap<String, Connection> persistents = null;
 	protected static String[] names = null;
+	
+	
 	private DataManager() throws NamingException {
 		InitialContext ctx = new InitialContext();
 		sources = new HashMap<String, DataSource>();
@@ -47,6 +51,7 @@ public final class DataManager {
 		}
 		names = tmp.toArray(new String[tmp.size()]);
 		persistents = new HashMap<String, Connection>();
+		operators = new Hashtable<String, Operate<? extends Model>>();
 	}
 	
 	public static synchronized DataManager getInstance() 
@@ -104,18 +109,16 @@ public final class DataManager {
 		return persistents.get(key);
 	}
 	
-	public static void startTransaction(String source) throws SQLException {
-		Connection conn = getPersistentConnection(source);
-		if (conn == null) {
-			throw new SQLException(
-					"Connection Not Found with Source: " + source);
-		}
+	public static Connection startTransaction(String source) 
+			throws SQLException {
 		
+		Connection conn = getPersistent(source);
 		conn.setAutoCommit(false);
+		return conn;
 	}
 	
-	public static void startTransaction() throws SQLException {
-		startTransaction(Const.DATA_DEFAULT);
+	public static Connection startTransaction() throws SQLException {
+		return startTransaction(Const.DATA_DEFAULT);
 	}
 	
 	public static void commit(String source) throws SQLException {
@@ -181,9 +184,8 @@ public final class DataManager {
 	}
 	
 	public static void freeAllPersisten() {
-		for (int i = 0, len = names.length; 
-			 i < len; 
-			 closePersistent(names[i++]));
+		for (String name : names) {
+			closePersistent(name);
+		}
 	}
-	
 }

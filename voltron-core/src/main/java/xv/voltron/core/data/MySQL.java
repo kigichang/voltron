@@ -9,15 +9,22 @@ import java.sql.Statement;
 import java.text.ParseException;
 import java.util.ArrayList;
 import xv.voltron.constant.ColumnType;
+import xv.voltron.constant.Const;
+import xv.voltron.constant.DataType;
 import xv.voltron.core.DataManager;
+import xv.voltron.core.Model;
 
-public class MySQL<T> extends Operate<T> {
+public class MySQL<T extends Model> extends Operate<T> {
 
+	public MySQL(Class<T> clazz, boolean persistent) throws SQLException {
+		super(clazz, persistent);
+	}
+	
 	public MySQL(Class<T> clazz) throws SQLException {
 		super(clazz);
-		// TODO Auto-generated constructor stub
-	}
 
+	}
+	
 	@Override
 	public int add(T model) throws SQLException {
 		// TODO Auto-generated method stub
@@ -29,26 +36,33 @@ public class MySQL<T> extends Operate<T> {
 				new StringBuffer(" VALUES (");
 		
 		ArrayList<Object> val = new ArrayList<Object>();
-		ArrayList<ColumnType> type = new ArrayList<ColumnType>();
+		ArrayList<DataType> type = new ArrayList<DataType>();
 		ArrayList<Column> gen_keys = new ArrayList<Column>();
 		
-		int i = 0, len = columns
+		
 		boolean has_auto_increment = false;
 
 		try {
-			for (; i < len; i++) {
-				if (!columns[i].isAutoIncrement) {
-					Object val_tmp = columns[i].getValue(model);
+			for (Column col : columns.values()) {
+				if (col.isExpression) {
+					continue;
+				}
+				
+				if (!col.isAutoIncrement) {
+					Object val_tmp = col.getValue(model);
+					if (val_tmp == null) {
+						val_tmp = col.defaultValue();
+					}
+					
 					if (val_tmp != null) {
-						column.append(columns[i].fieldName).append(',');
+						column.append(col.fieldName).append(',');
 						values.append("?,");
 						val.add(val_tmp);
-						type.add(columns[i].type);
-						
+						type.add(col.type);
 					}
 				}
 				else {
-					gen_keys.add(columns[i]);
+					gen_keys.add(col);
 					has_auto_increment = true;
 				}
 			}
@@ -56,8 +70,8 @@ public class MySQL<T> extends Operate<T> {
 		catch (IllegalAccessException
 				| IllegalArgumentException 
 				| InvocationTargetException
-				| NoSuchMethodException
-				| SecurityException e) {
+				| SecurityException
+				| ParseException e) {
 			// TODO Auto-generated catch block
 			val.clear();
 			type.clear();
@@ -65,8 +79,8 @@ public class MySQL<T> extends Operate<T> {
 			type = null;
 			column = null;
 			values = null;
-			new SQLException("Invoke Error " + columns[i].getter + " " + e);
-		} 
+			new SQLException(e);
+		}
 		
 		column.setCharAt(column.length() - 1, ')');
 		values.setCharAt(column.length() - 1, ')');
@@ -76,58 +90,55 @@ public class MySQL<T> extends Operate<T> {
 		ResultSet rs = null;
 		int ret = -1;
 		try {
-			conn = DataManager.getConnection(dataSource);
+			conn = getConnection();
+			if(!model.beforeInsert(conn)) {
+				return -1;
+			}
+			
 			stmt = conn.prepareStatement(column.append(values).toString(),
 									 has_auto_increment ?
 									 Statement.RETURN_GENERATED_KEYS :
 									 Statement.NO_GENERATED_KEYS);
 		
-			for (i = 0, len = val.size(); i < len; i++) {
-				stmt.setObject(i+1, val.get(i), type.get(i).toSQLType());
+			for (int i = 0, len = val.size(); i < len; i++) {
+				type.get(i).setParam(stmt, i + 1, val.get(i));
 			}
+			
 			ret = stmt.executeUpdate();
 			if (has_auto_increment) {
 				rs = stmt.getGeneratedKeys();
 				if (rs.next()) {
-					for (int k = 0, size = gen_keys.size(); k < size; k++) {
-						Column col = gen_keys.get(k);
-						Object v = rs.getObject(col.fieldName, col.type.toClass());
-						setValue(clazz, model, col.setter, col.type.toClass(), v);
+					for (Column col : gen_keys) {
+						Object v = col.type.getResult(rs, col.fieldName);
+						col.setValue(model, v);
 					}
 				}
 				else {
 					throw new SQLException("Generated Key Error");
 				}
 			}
+			model.afterInsert(conn);
 			
 		} catch (IllegalAccessException
 				| IllegalArgumentException 
 				| InvocationTargetException
-				| NoSuchMethodException
 				| SecurityException e) {
 			// TODO Auto-generated catch block
 			//e.printStackTrace();
+			ret = -1;
+			new SQLException(e);
+		}
+		finally {
 			val.clear();
 			type.clear();
 			val = null;
 			type = null;
 			column = null;
 			values = null;
-			new SQLException(e);
-		}
-		finally {
 			closeResultSet(rs);
 			closeStatement(stmt);
 			closeConnection(conn);
 		}
-		
-		
-		val.clear();
-		type.clear();
-		val = null;
-		type = null;
-		column = null;
-		values = null;
 		
 		return ret;
 	}
@@ -136,140 +147,108 @@ public class MySQL<T> extends Operate<T> {
 	public int update(T model) throws SQLException {
 		// TODO Auto-generated method stub
 		StringBuffer column = new StringBuffer("UPDATE ")
-			.append(tableName).append(" SET ");
+								.append(tableName)
+								.append(" SET ");
+		
+		ArrayList<DataType> col_type = new ArrayList<DataType>();
+		ArrayList<Object> col_val = new ArrayList<Object>();
 		
 		StringBuffer where = new StringBuffer(" WHERE ");
-		boolean findPrimary = false;
-		int i = 0, len = columns.length;
-		ArrayList<Object> val = new ArrayList<Object>();
-		ArrayList<ColumnType> type = new ArrayList<ColumnType>();
+		ArrayList<DataType> where_type = new ArrayList<DataType>();
+		ArrayList<Object> where_val = new ArrayList<Object>();
+		
+		boolean has_primary = false;
 		
 		try {
-			for (; i < len; i++) {
-				Object val_tmp = getValue(clazz, model, columns[i].getter);
+			for(Column col : columns.values()) {
+				if (col.isExpression) {
+					continue;
+				}
+			
+				Object val_tmp = col.getValue(model);
 				if (val_tmp != null) {
-					if (columns[i].isPrimary) {
-						findPrimary = true;
-						where.append(columns[i].fieldName)
-							.append("=?,");
+					if (col.isPrimary) {
+						has_primary = true;
+						where.append(col.fieldName).append("=? AND");
+						where_type.add(col.type);
+						where_val.add(val_tmp);
 					}
 					else {
-						column.append(columns[i].fieldName)
-							.append("=?,");
+						column.append(col.fieldName).append("=?,");
+						col_type.add(col.type);
+						col_val.add(val_tmp);
 					}
-					val.add(val_tmp);
-					type.add(columns[i].type);
 				}
-			}
-		}
-		catch (IllegalAccessException
-				| IllegalArgumentException 
-				| InvocationTargetException
-				| NoSuchMethodException
-				| SecurityException e) {
+				else {
+					if (Const.FIELD_UPDATED.equals(col.fieldName)) {
+						column.append(col.fieldName).append("=?,");
+						col_type.add(col.type);
+						col_val.add(col.defaultValue());
+					}
+				}
+			
+			}// for
+		} catch (IllegalAccessException | IllegalArgumentException
+				| InvocationTargetException | ParseException e) {
 			// TODO Auto-generated catch block
-			val.clear();
-			type.clear();
-			val = null;
-			type = null;
+			col_val.clear();
+			where_val.clear();
+			col_val = null;
+			where_val = null;
 			column = null;
-			new SQLException("Invoke Error " + columns[i].getter + " " + e);
+			where = null;
+			throw new SQLException(e);
 		}
 		
-		if (!findPrimary) {
-			val.clear();
-			type.clear();
-			val = null;
-			type = null;
+		if (!has_primary) {
+			col_val.clear();
+			where_val.clear();
+			col_val = null;
+			where_val = null;
 			column = null;
-			new SQLException("No Primary Value Find, DO Nothing for SECURITY");
+			where = null;
+			throw new SQLException("Condition for Primary Not Found. Stop for Security Issue");
 		}
 		
 		column.setLength(column.length() - 1);
-		column.append(where.substring(0, where.length() - 1));
+		where.setLength(where.length() - 3);
 		
 		Connection conn = null;
 		PreparedStatement stmt = null;
 		int ret = -1;
-		try {
-			conn = DataManager.getConnection(dataSource);
-			stmt = conn.prepareStatement(column.toString());
 		
-			for (i = 0, len = val.size(); i < len; i++) {
-				stmt.setObject(i+1, val.get(i), type.get(i).toSQLType());
-			}
-			ret = stmt.executeUpdate();
+		try {
+			conn = getConnection();
+			stmt = conn.prepareStatement(column.append(where).toString());
 			
-		} catch (IllegalArgumentException | SecurityException e) {
-			// TODO Auto-generated catch block
-			//e.printStackTrace();
-			val.clear();
-			type.clear();
-			val = null;
-			type = null;
-			column = null;
-			new SQLException(e);
+			int seq = 1;
+			for (int i = 0, len = col_val.size(); i < len; i++) {
+				col_type.get(i).setParam(stmt, seq++, col_val.get(i));
+			}
+			
+			for (int i = 0, len = where_val.size(); i < len; i++) {
+				where_type.get(i).setParam(stmt, seq++, where_val.get(i));
+			}
+			
+			ret = stmt.executeUpdate();
 		}
 		finally {
+			col_val.clear();
+			where_val.clear();
+			col_val = null;
+			where_val = null;
+			column = null;
+			where = null;
 			closeStatement(stmt);
 			closeConnection(conn);
 		}
-		
-		val.clear();
-		type.clear();
-		val = null;
-		type = null;
-		column = null;
-		
 		return ret;
 	}
 
 	@Override
 	public T[] find(String condition, Object... values) throws SQLException {
 		// TODO Auto-generated method stub
-		StringBuffer select = new StringBuffer("SELECT ");
-		int i = 0, len = columns.length;
-		for (; i < len; i++) {
-			select.append(columns[i].fieldName)
-				.append(" AS ")
-				.append(columns[i].name)
-				.append(',');
-		}
-		
-		select.setCharAt(select.length() - 1, ' ');
-		select.append(" FROM ").append(tableName);
-		select.append(" WHERE ").append(condition);
-		
-		Connection conn = null;
-		PreparedStatement stmt = null;
-		ResultSet rs = null;
-		
-		try {
-			conn = DataManager.getConnection(dataSource);
-			stmt = conn.prepareStatement(select.toString());
-			
-			for (i = 0, len = values.length / 2; i < len; i++) {
-				ColumnType ct = (ColumnType)values[i << 1];
-				String val = (String)values[(i << 1) + 1];
-				stmt.setObject(i + 1, ct.parseValue(val), ct.toSQLType());
-			}
-			
-			rs = stmt.executeQuery();
-			ArrayList<T> tmp = new ArrayList<T>();
-			while(rs.next()) {
-				
-			}
-			
-		}
-		catch (ParseException e) {
-			throw new SQLException(e);
-		}
-		finally {
-			closeResultSet(rs);
-			closeStatement(stmt);
-			closeConnection(conn);
-		}
-		
+		return null;		
 	}
 	
 

@@ -17,14 +17,17 @@ import xv.voltron.constant.ColumnType;
 import xv.voltron.constant.Const;
 import xv.voltron.constant.DataType;
 import xv.voltron.core.Convention;
+import xv.voltron.core.DataManager;
+import xv.voltron.core.Model;
 
-public abstract class Operate<T> {
+public abstract class Operate<T extends Model> {
 
 	protected Class<T> clazz = null;
 	
 	protected String name = null;
 	protected String tableName = null;
 	protected String dataSource = null;
+	protected boolean isPersistent = false;
 	
 	/**
 	 * Data Field Name and Column pair
@@ -32,23 +35,23 @@ public abstract class Operate<T> {
 	protected HashMap<String, Column> columns = null;
 	
 	
-	public Operate(Class<T> clazz) throws SQLException {
+	public Operate(Class<T> clazz, boolean persistent) throws SQLException {
 		Table table = clazz.getAnnotation(Table.class);
 		if (table == null) {
 			throw new SQLException("Table Annotation Not Found");
 		}
-		
+		this.isPersistent = persistent;
 		String t_name = table.name();
 		String t_table_name = table.tableName();
 		String t_data_source = table.dataSource();
+		
 		name = "".equals(t_name) ? clazz.getSimpleName() : t_name;
-		tableName = "".equals(t_table_name) ? 
-				Convention.toUnderlineName(name) :
-				t_table_name;
+		
+		tableName = "".equals(t_table_name) ?
+						Convention.toUnderlineName(name) : t_table_name;
 		
 		dataSource = "".equals(t_data_source) ? 
-				Const.DATA_DEFAULT :
-				t_data_source;
+						Const.DATA_DEFAULT : t_data_source;
 		
 		this.clazz = clazz;
 		
@@ -77,6 +80,16 @@ public abstract class Operate<T> {
 				}
 			}
 		}// for
+	}
+	
+	public Operate(Class<T> clazz) throws SQLException {
+		this(clazz, false);
+	}
+	
+	protected Connection getConnection() throws SQLException {
+		return isPersistent ?
+				DataManager.getPersistent(dataSource):
+				DataManager.getConnection(dataSource);
 	}
 	
 	protected void closeConnection(Connection conn) {
