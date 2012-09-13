@@ -1,51 +1,50 @@
 package xv.voltron.core.data;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.text.ParseException;
-
-import xv.voltron.constant.ColumnType;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import xv.voltron.annotation.Field;
+import xv.voltron.constant.DataType;
 import xv.voltron.core.Convention;
 
 public final class Column {
+	protected Class<?> clazz = null;
 	protected String name = null;
 	protected String fieldName = null;
-	protected ColumnType type = null;
+	protected DataType type = null;
 	protected String defValue = null;
+	protected String expression = null;
 	protected boolean isPrimary = false;
 	protected boolean isAutoIncrement = false;
-	protected String setter = null;
-	protected String getter = null;
+	protected boolean isExpression = false;
+	protected Method setter = null;
+	protected Method getter = null;
 	
-	public Column(String name, 
-				  String fieldName, 
-				  ColumnType type, 
-				  String defValue, 
-				  boolean isPrimary, 
-				  boolean isAutoIncrement) {
-		
+	public Column(Class<?> clazz, String name, DataType type, Field field) throws NoSuchMethodException, SecurityException {
+		this.clazz = clazz;
 		this.name = name;
-		this.fieldName = fieldName;
 		this.type = type;
-		this.defValue = defValue;
-		this.isPrimary = isPrimary;
-		this.isAutoIncrement = isAutoIncrement;
 		
-		setter = "set" + name;
-		getter = (ColumnType.BOOLEAN == type ? "is" : "get") + name;
+		this.fieldName = "".equals(field.fieldName()) ?
+				Convention.toUnderlineName(name) :
+				field.fieldName();
+				
+		this.defValue = field.defValue();
+		this.expression = field.expression();
+		this.isPrimary = field.isPrimary();
+		this.isAutoIncrement = field.isAutoIncrement();
+		this.isExpression = !"".equals(this.expression);
 		
+		setter = clazz.getMethod("set" + name, type.toClass());
+		getter = clazz.getMethod( 
+					(type.compatible(Boolean.class) ? "is" : "get") + name);
 	}
 	
-	public Column(String name, String fieldName, ColumnType type, String defValue) {
-		this(name, fieldName, type, defValue, false, false);
+	public Object getValue(Object model) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+		return getter.invoke(model);
 	}
 	
-	public void setStatement(PreparedStatement stmt, int index, String val) throws SQLException, ParseException {
-		type.setStatement(stmt, index, val);
+	public void setValue(Object model, Object val) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+		setter.invoke(model, val);
 	}
 	
-	public Object getResult(ResultSet rs) throws SQLException {
-		return type.getResult(rs, fieldName);
-	}
 	
 }

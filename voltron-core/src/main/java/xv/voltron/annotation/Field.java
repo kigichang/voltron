@@ -10,8 +10,8 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 public @interface Field {
-	String name() default "";
 	String fieldName() default "";
+	String expression() default "";
 	String defValue() default "";
 	boolean isPrimary() default false;
 	boolean isAutoIncrement() default false;

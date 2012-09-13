@@ -10,7 +10,6 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import xv.voltron.constant.ColumnType;
 import xv.voltron.core.DataManager;
-import xv.voltron.core.Operate;
 
 public class MySQL<T> extends Operate<T> {
 
@@ -33,13 +32,13 @@ public class MySQL<T> extends Operate<T> {
 		ArrayList<ColumnType> type = new ArrayList<ColumnType>();
 		ArrayList<Column> gen_keys = new ArrayList<Column>();
 		
-		int i = 0, len = columns.length;
+		int i = 0, len = columns
 		boolean has_auto_increment = false;
 
 		try {
 			for (; i < len; i++) {
 				if (!columns[i].isAutoIncrement) {
-					Object val_tmp = getValue(clazz, model, columns[i].getter);
+					Object val_tmp = columns[i].getValue(model);
 					if (val_tmp != null) {
 						column.append(columns[i].fieldName).append(',');
 						values.append("?,");

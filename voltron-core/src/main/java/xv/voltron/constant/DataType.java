@@ -1,6 +1,9 @@
 package xv.voltron.constant;
 
 import java.math.BigDecimal;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.sql.Date;
 import java.sql.Time;
@@ -22,6 +25,19 @@ public enum DataType implements TypeFunc {
 			}
 			return val;
 		}
+
+		@Override
+		public Object getResult(ResultSet rs, String label) throws SQLException {
+			// TODO Auto-generated method stub
+			return rs.getString(label);
+		}
+
+		@Override
+		public void setParam(PreparedStatement statement, int index, Object val)
+				throws SQLException {
+			// TODO Auto-generated method stub
+			statement.setString(index, (String)val);
+		}
 	},
 	
 	BIGDECIMAL(BigDecimal.class) {
@@ -39,6 +55,19 @@ public enum DataType implements TypeFunc {
 			catch (NumberFormatException e) {
 				throw new ParseException(e.toString(), 0);
 			}
+		}
+
+		@Override
+		public Object getResult(ResultSet rs, String label) throws SQLException {
+			// TODO Auto-generated method stub
+			return rs.getBigDecimal(label);
+		}
+
+		@Override
+		public void setParam(PreparedStatement statement, int index, Object val)
+				throws SQLException {
+			// TODO Auto-generated method stub
+			statement.setBigDecimal(index, (BigDecimal)val);
 		}
 		
 	},
@@ -59,6 +88,19 @@ public enum DataType implements TypeFunc {
 				throw new ParseException(e.toString(), 0);
 			}
 		}
+
+		@Override
+		public Object getResult(ResultSet rs, String label) throws SQLException {
+			// TODO Auto-generated method stub
+			return rs.getInt(label);
+		}
+
+		@Override
+		public void setParam(PreparedStatement statement, int index, Object val)
+				throws SQLException {
+			// TODO Auto-generated method stub
+			statement.setInt(index, (Integer)val);
+		}
 		
 	},
 	
@@ -71,6 +113,19 @@ public enum DataType implements TypeFunc {
 				throw new ParseException("Value is Null or Empty", 0);
 			}
 			return DateUtils.parseTimestamp(val);
+		}
+
+		@Override
+		public Object getResult(ResultSet rs, String label) throws SQLException {
+			// TODO Auto-generated method stub
+			return rs.getTimestamp(label);
+		}
+
+		@Override
+		public void setParam(PreparedStatement statement, int index, Object val)
+				throws SQLException {
+			// TODO Auto-generated method stub
+			statement.setTimestamp(index, (Timestamp)val);
 		}
 		
 	},
@@ -91,6 +146,19 @@ public enum DataType implements TypeFunc {
 				throw new ParseException(e.toString(), 0);
 			}
 		}
+
+		@Override
+		public Object getResult(ResultSet rs, String label) throws SQLException {
+			// TODO Auto-generated method stub
+			return rs.getLong(label);
+		}
+
+		@Override
+		public void setParam(PreparedStatement statement, int index, Object val)
+				throws SQLException {
+			// TODO Auto-generated method stub
+			statement.setLong(index, (Long)val);
+		}
 		
 	},
 	
@@ -109,6 +177,19 @@ public enum DataType implements TypeFunc {
 			catch (NumberFormatException e) {
 				throw new ParseException(e.toString(), 0);
 			}
+		}
+
+		@Override
+		public Object getResult(ResultSet rs, String label) throws SQLException {
+			// TODO Auto-generated method stub
+			return rs.getFloat(label);
+		}
+
+		@Override
+		public void setParam(PreparedStatement statement, int index, Object val)
+				throws SQLException {
+			// TODO Auto-generated method stub
+			statement.setFloat(index, (Float)val);
 		}
 		
 	},
@@ -129,6 +210,19 @@ public enum DataType implements TypeFunc {
 				throw new ParseException(e.toString(), 0);
 			}
 		}
+
+		@Override
+		public Object getResult(ResultSet rs, String label) throws SQLException {
+			// TODO Auto-generated method stub
+			return rs.getDouble(label);
+		}
+
+		@Override
+		public void setParam(PreparedStatement statement, int index, Object val)
+				throws SQLException {
+			// TODO Auto-generated method stub
+			statement.setDouble(index, (Double)val);
+		}
 		
 	},
 	
@@ -141,6 +235,19 @@ public enum DataType implements TypeFunc {
 				throw new ParseException("Value is Null or Empty", 0);
 			}
 			return new java.sql.Date(DateUtils.parseDate(val).getTime());
+		}
+
+		@Override
+		public Object getResult(ResultSet rs, String label) throws SQLException {
+			// TODO Auto-generated method stub
+			return rs.getDate(label);
+		}
+
+		@Override
+		public void setParam(PreparedStatement statement, int index, Object val)
+				throws SQLException {
+			// TODO Auto-generated method stub
+			statement.setDate(index, (Date)val);
 		}
 		
 	},
@@ -155,6 +262,19 @@ public enum DataType implements TypeFunc {
 			}
 			return DateUtils.parseTime(val);
 		}
+
+		@Override
+		public Object getResult(ResultSet rs, String label) throws SQLException {
+			// TODO Auto-generated method stub
+			return rs.getTime(label);
+		}
+
+		@Override
+		public void setParam(PreparedStatement statement, int index, Object val)
+				throws SQLException {
+			// TODO Auto-generated method stub
+			statement.setTime(index, (Time)val);
+		}
 		
 	},
 	CHAR(Character.class) {
@@ -168,6 +288,26 @@ public enum DataType implements TypeFunc {
 			else {
 				throw new ParseException("Value is Null or Empty", 0);
 			}
+		}
+
+		@Override
+		public Object getResult(ResultSet rs, String label) throws SQLException {
+			// TODO Auto-generated method stub
+			String tmp = rs.getString(label);
+			if (tmp == null) {
+				return null;
+			}
+			if (tmp.length() == 0) {
+				return 0x00;
+			}
+			return tmp.charAt(0);
+		}
+
+		@Override
+		public void setParam(PreparedStatement statement, int index, Object val)
+				throws SQLException {
+			// TODO Auto-generated method stub
+			statement.setString(index, val.toString());
 		}
 		
 	},
@@ -195,6 +335,19 @@ public enum DataType implements TypeFunc {
 				throw new ParseException("Can Not Verify Value to Boolean", 0);
 			}
 		}
+
+		@Override
+		public Object getResult(ResultSet rs, String label) throws SQLException {
+			// TODO Auto-generated method stub
+			return rs.getBoolean(label);
+		}
+
+		@Override
+		public void setParam(PreparedStatement statement, int index, Object val)
+				throws SQLException {
+			// TODO Auto-generated method stub
+			statement.setBoolean(index, (Boolean)val);
+		}
 		
 	};
 	
@@ -217,5 +370,9 @@ public enum DataType implements TypeFunc {
 		}
 		throw new UnsupportedDataTypeException(
 				type.getName() + " Not Supported");
+	}
+	
+	public Class<?> toClass() {
+		return this.clazz;
 	}
 }
