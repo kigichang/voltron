@@ -20,7 +20,7 @@ import xv.voltron.core.Convention;
 import xv.voltron.core.DataManager;
 import xv.voltron.core.Model;
 
-public abstract class Operate<T extends Model> {
+public abstract class Operator<T extends Model> {
 
 	protected Class<T> clazz = null;
 	
@@ -35,7 +35,7 @@ public abstract class Operate<T extends Model> {
 	protected HashMap<String, Column> columns = null;
 	
 	
-	public Operate(Class<T> clazz, boolean persistent) throws SQLException {
+	public Operator(Class<T> clazz, boolean persistent) throws SQLException {
 		Table table = clazz.getAnnotation(Table.class);
 		if (table == null) {
 			throw new SQLException("Table Annotation Not Found");
@@ -82,7 +82,7 @@ public abstract class Operate<T extends Model> {
 		}// for
 	}
 	
-	public Operate(Class<T> clazz) throws SQLException {
+	public Operator(Class<T> clazz) throws SQLException {
 		this(clazz, false);
 	}
 	

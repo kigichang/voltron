@@ -13,7 +13,7 @@ import javax.naming.NamingException;
 import javax.sql.DataSource;
 
 import xv.voltron.constant.Const;
-import xv.voltron.core.data.Operate;
+import xv.voltron.core.data.Operator;
 
 public final class DataManager {
 	
@@ -51,7 +51,7 @@ public final class DataManager {
 		}
 		names = tmp.toArray(new String[tmp.size()]);
 		persistents = new HashMap<String, Connection>();
-		operators = new Hashtable<String, Operate<? extends Model>>();
+		operators = new Hashtable<String, Operator<? extends Model>>();
 	}
 	
 	public static synchronized DataManager getInstance() 

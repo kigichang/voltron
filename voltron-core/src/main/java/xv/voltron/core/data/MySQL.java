@@ -14,7 +14,7 @@ import xv.voltron.constant.DataType;
 import xv.voltron.core.DataManager;
 import xv.voltron.core.Model;
 
-public class MySQL<T extends Model> extends Operate<T> {
+public class MySQL<T extends Model> extends Operator<T> {
 
 	public MySQL(Class<T> clazz, boolean persistent) throws SQLException {
 		super(clazz, persistent);
