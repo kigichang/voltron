@@ -11,7 +11,6 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import xv.voltron.constant.Const;
 import xv.voltron.constant.DataType;
-import xv.voltron.core.Convention;
 import xv.voltron.core.Model;
 
 public class MySQL<T extends Model> extends Operator<T> {
