@@ -22,7 +22,7 @@ public final class DataManager {
 	protected static HashMap<String, DataSource> sources = null;
 	
 	protected static HashMap<String, Connection> persistents = null;
-	protected static String[] names = null;
+	//protected static String[] names = null;
 	
 	
 	private DataManager() throws NamingException {
@@ -30,7 +30,7 @@ public final class DataManager {
 		sources = new HashMap<String, DataSource>();
 		NamingEnumeration<NameClassPair> e = ctx.list(Const.DATA_PREFIX);
 		boolean found = false;
-		ArrayList<String> tmp = new ArrayList<String>();
+		//ArrayList<String> tmp = new ArrayList<String>();
 		while(e.hasMoreElements()) {
 			String name = e.nextElement().getName();
 			if (Const.DATA_DEFAULT.equals(name)) {
@@ -39,19 +39,18 @@ public final class DataManager {
 						(DataSource)ctx.lookup(Const.DATA_PREFIX + "/" + name);
 				
 				sources.put(name, ds);
-				tmp.add(name);
+				//tmp.add(name);
 			}
 		}
 		if (!found) {
 			sources.clear();
 			sources = null;
-			tmp.clear();
-			tmp = null;
+			//tmp.clear();
+			//tmp = null;
 			throw new NamingException("Default DataSource Not Found");
 		}
-		names = tmp.toArray(new String[tmp.size()]);
+		//names = tmp.toArray(new String[tmp.size()]);
 		persistents = new HashMap<String, Connection>();
-		operators = new Hashtable<String, Operator<? extends Model>>();
 	}
 	
 	public static synchronized DataManager getInstance() 
@@ -184,7 +183,7 @@ public final class DataManager {
 	}
 	
 	public static void freeAllPersisten() {
-		for (String name : names) {
+		for (String name : sources.keySet()) {
 			closePersistent(name);
 		}
 	}

@@ -92,6 +92,17 @@ public final class Convention {
 		return ret.toString();
 	}
 	
+	public static String replace(String str, char find, char replace) {
+		int len = str.length();
+		StringBuffer tmp = new StringBuffer(len).append(str);
+		for (int i = 0; i < len; i++) {
+			if (tmp.charAt(i) == find) {
+				tmp.setCharAt(i, replace);
+			}
+		}
+		return tmp.toString();
+	}
+	
 	public static boolean is(int val) {
 		return val == 1;
 	}

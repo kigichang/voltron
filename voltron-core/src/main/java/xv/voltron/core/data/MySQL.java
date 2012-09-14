@@ -4,13 +4,14 @@ import java.lang.reflect.InvocationTargetException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.ParseException;
 import java.util.ArrayList;
 import xv.voltron.constant.Const;
 import xv.voltron.constant.DataType;
-import xv.voltron.core.DataManager;
+import xv.voltron.core.Convention;
 import xv.voltron.core.Model;
 
 public class MySQL<T extends Model> extends Operator<T> {
@@ -247,11 +248,95 @@ public class MySQL<T extends Model> extends Operator<T> {
 		return ret;
 	}
 
-	@Override
-	public T[] find(String condition, Object... values) throws SQLException {
-		// TODO Auto-generated method stub
-		return null;		
+	protected T[] find(String selectCommand, String condition, DataValue... values) throws SQLException {
+		boolean where = false;
+		if ((where = !(condition == null || condition.length() <= 0))
+				&& (values == null || values.length <= 0)) {
+			throw new SQLException ("Condition has No Values");
+		}
+		
+		StringBuffer select = new StringBuffer(selectCommand);
+		
+		select.append(" FROM ").append(schema.tableName).append(' ').append(schema.name);
+		if (where) {
+			select.append(" WHERE ").append(condition);
+		}
+		
+		Connection conn = null;
+		PreparedStatement stmt = null;
+		ResultSet rs = null;
+		
+		try {
+			conn = getConnection();
+			stmt = conn.prepareStatement(select.toString());
+			if (where) {
+				int seq = 1;
+				for (DataValue val : values) {
+					val.type.setParam(stmt, seq++, val.getValue());
+				}
+			}
+			rs = stmt.executeQuery();
+			ResultSetMetaData meta = rs.getMetaData();
+			ArrayList<T> ret = new ArrayList<T>();
+			while(rs.next()) {
+				ret.add(toModel(rs, meta));
+			}
+			return (T[])ret.toArray();
+		}
+		catch(ParseException 
+				| IllegalAccessException 
+				| IllegalArgumentException 
+				| InvocationTargetException 
+				| InstantiationException e) {
+			throw new SQLException(e);
+		}
+		finally {
+			closeResultSet(rs);
+			closeStatement(stmt);
+			closeConnection(conn);
+		}
+		
 	}
+	@Override
+	public T[] find(String[] fields, String condition, DataValue... values)
+			throws SQLException {
+		
+		
+		
+		StringBuffer select = new StringBuffer("SELECT ");
+		
+		for (String field : fields) {
+			String alias = schema.alias.get(field);
+			if (alias == null) {
+				select = null;
+				throw new SQLException("Field Not Defined " + field);
+			}
+			
+			select.append(field)
+				.append(" AS ")
+				.append(alias)
+				.append(',');
+		}
+		
+		select.setLength(select.length() - 1);
+		return find(select.toString(), condition, values);		
+	}
+
+	@Override
+	public T[] find(String condition, DataValue... values) throws SQLException {
+		// TODO Auto-generated method stub
+		
+		StringBuffer select = new StringBuffer("SELECT ");
+		
+		for (String label : schema.alias.keySet()) {
+			select.append(label).append(" AS ").append(schema.alias.get(label)).append(',');
+		}
+		
+		select.setLength(select.length() - 1);
+		return find(select.toString(), condition, values);
+	}
+
+	
 	
 
 }

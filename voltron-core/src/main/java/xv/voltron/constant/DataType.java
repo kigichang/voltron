@@ -10,6 +10,7 @@ import java.sql.Time;
 import java.text.ParseException;
 
 import xv.voltron.core.TypeFunc;
+import xv.voltron.core.data.DataValue;
 import xv.voltron.exception.UnsupportedDataTypeException;
 import xv.voltron.util.DateUtils;
 
@@ -369,5 +370,9 @@ public enum DataType implements TypeFunc {
 	
 	public Class<?> toClass() {
 		return this.clazz;
+	}
+	
+	public DataValue toValue(String value) {
+		return new DataValue(this, value);
 	}
 }

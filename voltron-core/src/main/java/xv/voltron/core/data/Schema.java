@@ -22,8 +22,7 @@ public class Schema {
 		Schema s = null;
 		if ((s = schemas.get(clazz)) == null) {
 			s = new Schema(clazz);
-			Schema old = schemas.put(clazz, s);
-			old = null;
+			schemas.put(clazz, s);
 		}
 		return s;
 	}
@@ -31,7 +30,13 @@ public class Schema {
 	protected String name = null;
 	protected String tableName = null;
 	protected String dataSource = null;
+	
+	protected HashMap<String, String> alias = null;
+	/**
+	 * alias, column pair
+	 */
 	protected HashMap<String, Column> columns = null;
+	
 	
 	private Schema(Class<? extends Model> clazz) throws SQLException {
 		Table table = clazz.getAnnotation(Table.class);
@@ -41,7 +46,7 @@ public class Schema {
 		
 		this.name = clazz.getSimpleName();
 		this.tableName = "".equals(table.tableName()) ?
-				Convention.uncapitalize(this.name) : table.tableName();
+				Convention.toUnderlineName(this.name) : table.tableName();
 		
 		this.dataSource = "".equals(table.dataSource()) ?
 				Const.DATA_DEFAULT : table.dataSource();
@@ -49,6 +54,7 @@ public class Schema {
 		
 		Field[] fields = clazz.getDeclaredFields();
 		columns = new HashMap<String, Column>();
+		alias = new HashMap<String, String>();
 		for (Field field : fields) {
 			xv.voltron.annotation.Field f =
 					field.getAnnotation(xv.voltron.annotation.Field.class);
@@ -62,7 +68,14 @@ public class Schema {
 									   f_type, 
 									   f);
 					
-					columns.put(col.fieldName, col);
+					String label_tmp =
+							new StringBuffer(name).append('.').append(col.fieldName).toString();
+					
+					String alias_tmp =
+							new StringBuffer(name).append('_').append(col.fieldName).toString();
+					
+					alias.put(label_tmp, alias_tmp);
+					columns.put(alias_tmp, col);
 					
 				} catch (NoSuchMethodException | SecurityException e) {
 					// TODO Auto-generated catch block
