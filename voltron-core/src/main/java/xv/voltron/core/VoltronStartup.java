@@ -41,12 +41,8 @@ public class VoltronStartup extends HttpServlet {
 			}
 			
 			DataManager.getInstance();
-		} catch (ConfigurationException e) {
+		} catch (ConfigurationException | ClassNotFoundException e) {
 			// TODO Auto-generated catch block
-			throw new ServletException(e);
-		} catch (NamingException e) {
-			// TODO Auto-generated catch block
-			//e.printStackTrace();
 			throw new ServletException(e);
 		}
 	}

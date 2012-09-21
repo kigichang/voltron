@@ -9,7 +9,7 @@ import java.util.Date;
 
 import xv.voltron.core.Config;
 
-public class DateUtils {
+public final class DateUtils {
 
 	protected static SimpleDateFormat DEFAULT_DATE_FORMAT;
 	protected static SimpleDateFormat DEFAULT_TIME_FORMAT;

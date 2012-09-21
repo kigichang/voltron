@@ -1,7 +1,4 @@
 package xv.voltron.core;
-
-import java.math.BigDecimal;
-
 public final class Convention {
 	
 	public static boolean isUpperCase(char c) {
@@ -103,15 +100,10 @@ public final class Convention {
 		return tmp.toString();
 	}
 	
-	public static boolean is(int val) {
-		return val == 1;
+	public static <T extends Number> boolean is(T val) {
+		return val != null ?
+				val.intValue() == 1 :
+				false;
 	}
 	
-	public static boolean is(long val) {
-		return val == 1;
-	}
-	
-	public static boolean is(BigDecimal val) {
-		return (val != null && val.intValue() == 1);
-	}
 }

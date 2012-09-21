@@ -32,13 +32,21 @@ public enum DataType implements TypeFunc {
 			// TODO Auto-generated method stub
 			return rs.getString(label);
 		}
-
+		
+		@Override
+		public Object getResult(ResultSet rs, int index) throws SQLException {
+			// TODO Auto-generated method stub
+			return rs.getString(index);		
+		}
+		
 		@Override
 		public void setParam(PreparedStatement statement, int index, Object val)
 				throws SQLException {
 			// TODO Auto-generated method stub
 			statement.setString(index, (String)val);
 		}
+
+		
 
 	},
 	
@@ -70,6 +78,12 @@ public enum DataType implements TypeFunc {
 				throws SQLException {
 			// TODO Auto-generated method stub
 			statement.setBigDecimal(index, (BigDecimal)val);
+		}
+
+		@Override
+		public Object getResult(ResultSet rs, int index) throws SQLException {
+			// TODO Auto-generated method stub
+			return rs.getBigDecimal(index);
 		}
 		
 	},
@@ -104,6 +118,12 @@ public enum DataType implements TypeFunc {
 			statement.setInt(index, (Integer)val);
 		}
 
+		@Override
+		public Object getResult(ResultSet rs, int index) throws SQLException {
+			// TODO Auto-generated method stub
+			return rs.getInt(index);
+		}
+
 	},
 	
 	TIMESTAMP(Timestamp.class) {
@@ -128,6 +148,12 @@ public enum DataType implements TypeFunc {
 				throws SQLException {
 			// TODO Auto-generated method stub
 			statement.setTimestamp(index, (Timestamp)val);
+		}
+
+		@Override
+		public Object getResult(ResultSet rs, int index) throws SQLException {
+			// TODO Auto-generated method stub
+			return rs.getTimestamp(index);
 		}
 		
 	},
@@ -161,6 +187,12 @@ public enum DataType implements TypeFunc {
 			// TODO Auto-generated method stub
 			statement.setLong(index, (Long)val);
 		}
+
+		@Override
+		public Object getResult(ResultSet rs, int index) throws SQLException {
+			// TODO Auto-generated method stub
+			return rs.getLong(index);
+		}
 	},
 	
 	FLOAT(Float.class) {
@@ -191,6 +223,12 @@ public enum DataType implements TypeFunc {
 				throws SQLException {
 			// TODO Auto-generated method stub
 			statement.setFloat(index, (Float)val);
+		}
+
+		@Override
+		public Object getResult(ResultSet rs, int index) throws SQLException {
+			// TODO Auto-generated method stub
+			return rs.getFloat(index);
 		}
 
 	},
@@ -224,6 +262,12 @@ public enum DataType implements TypeFunc {
 			// TODO Auto-generated method stub
 			statement.setDouble(index, (Double)val);
 		}
+
+		@Override
+		public Object getResult(ResultSet rs, int index) throws SQLException {
+			// TODO Auto-generated method stub
+			return rs.getDouble(index);
+		}
 	},
 	
 	DATE(Date.class) {
@@ -249,6 +293,12 @@ public enum DataType implements TypeFunc {
 			// TODO Auto-generated method stub
 			statement.setDate(index, (Date)val);
 		}
+
+		@Override
+		public Object getResult(ResultSet rs, int index) throws SQLException {
+			// TODO Auto-generated method stub
+			return rs.getDate(index);
+		}
 	},
 	
 	TIME(Time.class) {
@@ -273,6 +323,12 @@ public enum DataType implements TypeFunc {
 				throws SQLException {
 			// TODO Auto-generated method stub
 			statement.setTime(index, (Time)val);
+		}
+
+		@Override
+		public Object getResult(ResultSet rs, int index) throws SQLException {
+			// TODO Auto-generated method stub
+			return rs.getTime(index);
 		}
 	},
 	CHAR(Character.class) {
@@ -306,6 +362,19 @@ public enum DataType implements TypeFunc {
 				throws SQLException {
 			// TODO Auto-generated method stub
 			statement.setString(index, val.toString());
+		}
+
+		@Override
+		public Object getResult(ResultSet rs, int index) throws SQLException {
+			// TODO Auto-generated method stub
+			String tmp = rs.getString(index);
+			if (tmp == null) {
+				return null;
+			}
+			if (tmp.length() == 0) {
+				return 0x00;
+			}
+			return tmp.charAt(0);
 		}	
 	},
 	BOOLEAN(Boolean.class) {
@@ -344,6 +413,12 @@ public enum DataType implements TypeFunc {
 				throws SQLException {
 			// TODO Auto-generated method stub
 			statement.setBoolean(index, (Boolean)val);
+		}
+
+		@Override
+		public Object getResult(ResultSet rs, int index) throws SQLException {
+			// TODO Auto-generated method stub
+			return rs.getBoolean(index);
 		}
 	};
 	

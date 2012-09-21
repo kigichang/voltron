@@ -1,9 +1,14 @@
 package xv.voltron.core.data;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.sql.SQLException;
+import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Hashtable;
+
+import javax.servlet.http.HttpServletRequest;
 
 import xv.voltron.annotation.Table;
 import xv.voltron.constant.Const;
@@ -11,10 +16,10 @@ import xv.voltron.constant.DataType;
 import xv.voltron.core.Convention;
 import xv.voltron.core.Model;
 
-public class Schema {
+public final class Schema {
 	
-	protected static Hashtable<Class<?>, Schema> schemas = 
-			new Hashtable<Class<?>, Schema>();
+	private static Hashtable<Class<? extends Model>, Schema> schemas = 
+			new Hashtable<Class<? extends Model>, Schema>();
 	
 	public static Schema getSchema(Class<? extends Model> clazz) 
 			throws SQLException {
@@ -27,15 +32,21 @@ public class Schema {
 		return s;
 	}
 	
+	
 	protected String name = null;
 	protected String tableName = null;
 	protected String dataSource = null;
 	
-	protected HashMap<String, String> alias = null;
+	/**
+	 * column, alias pair
+	 */
+	//protected HashMap<String, String> alias = null;
+	
 	/**
 	 * alias, column pair
 	 */
 	protected HashMap<String, Column> columns = null;
+	
 	
 	
 	private Schema(Class<? extends Model> clazz) throws SQLException {
@@ -51,39 +62,41 @@ public class Schema {
 		this.dataSource = "".equals(table.dataSource()) ?
 				Const.DATA_DEFAULT : table.dataSource();
 		
-		
-		Field[] fields = clazz.getDeclaredFields();
+		//ArrayList<Field> fields = new ArrayList<Field>();
 		columns = new HashMap<String, Column>();
-		alias = new HashMap<String, String>();
-		for (Field field : fields) {
-			xv.voltron.annotation.Field f =
-					field.getAnnotation(xv.voltron.annotation.Field.class);
+		for (Class<?> c = clazz; c != null; c = c.getSuperclass()) {
+			if (c.equals(Model.class)) {
+				break;
+			}
+			Field[] tmp = c.getDeclaredFields();
 			
-			if (f != null) {
-				DataType f_type = DataType.valueOf(field.getType());
-				try {
-					Column col = 
-							new Column(clazz, 
-									   Convention.capitalize(field.getName()), 
-									   f_type, 
-									   f);
-					
-					String label_tmp =
-							new StringBuffer(name).append('.').append(col.fieldName).toString();
-					
-					String alias_tmp =
-							new StringBuffer(name).append('_').append(col.fieldName).toString();
-					
-					alias.put(label_tmp, alias_tmp);
-					columns.put(alias_tmp, col);
-					
-				} catch (NoSuchMethodException | SecurityException e) {
-					// TODO Auto-generated catch block
-					columns.clear();
-					columns = null;
-					throw new SQLException(e);
+			for (Field field : tmp) {
+				//fields.add(f);
+				xv.voltron.annotation.Field f =
+						field.getAnnotation(xv.voltron.annotation.Field.class);
+				
+				if (f != null) {
+					DataType f_type = DataType.valueOf(field.getType());
+					try {
+						Column col = new Column(
+										clazz, 
+										Convention.capitalize(field.getName()),
+										f_type,
+										f);
+						
+						columns.put(col.displayLabel, col);
+						
+					} catch (NoSuchMethodException | SecurityException e) {
+						// TODO Auto-generated catch block
+						columns.clear();
+						columns = null;
+						//alias.clear();
+						//alias = null;
+						throw new SQLException(e);
+					}
 				}
 			}
+			
 		}
 	}
 }

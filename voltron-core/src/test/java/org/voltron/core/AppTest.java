@@ -2,7 +2,8 @@ package org.voltron.core;
 
 import java.text.ParseException;
 
-import xv.voltron.constant.ColumnType;
+import org.apache.commons.pool.impl.GenericObjectPool;
+
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
@@ -34,17 +35,14 @@ public class AppTest
     /**
      * Rigourous Test :-)
      * @throws ParseException 
+     * @throws ClassNotFoundException 
      */
-    public void testApp() throws ParseException
+    public void testApp() throws ParseException, ClassNotFoundException
     {
         assertTrue( true );
-        ColumnType ct = ColumnType.LONG;
+        Class.forName("com.mysql.jdbc.Driver");
+        GenericObjectPool pool = new GenericObjectPool(null);
         
-        Long t = (Long) ct.parseValue("123456789");
-        System.out.println("t = " + t);
         
-        for(ColumnType ct2 : ColumnType.values()) {
-        	System.out.println(ct2.toString());
-        }
     }
 }

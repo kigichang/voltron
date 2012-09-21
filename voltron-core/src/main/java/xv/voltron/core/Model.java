@@ -36,4 +36,5 @@ public class Model {
 	public void afterSelect(Connection conn) throws SQLException {
 		
 	}
+	
 }

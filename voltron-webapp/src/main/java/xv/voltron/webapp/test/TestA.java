@@ -3,7 +3,9 @@ package xv.voltron.webapp.test;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 
 import javax.naming.NamingException;
 import javax.servlet.ServletException;
@@ -27,13 +29,39 @@ public class TestA extends HttpServlet {
 			throws ServletException, IOException {
 		// TODO Auto-generated method stub
 		PrintWriter out = resp.getWriter();
+		Connection conn = null;
+		Statement stmt = null;
+		ResultSet rs = null;
+		
 		try {
-			Connection conn = DataManager.getPersistent();
-			out.println("<br />In A connection : " + conn.hashCode());
+			conn = DataManager.getPersistent();
+			stmt = conn.createStatement();
+			rs = stmt.executeQuery("select * from admin where id = " + req.getParameter("Admin.Id"));
+			if (rs.next()) {
+				rs.getString("name");
+			}
+			out.println("<br />In A connection : " + conn.hashCode() + " and name = " + rs.getString("name"));
 			req.setAttribute("conn", conn);
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+		}
+		finally {
+			if (rs != null) { try {
+				rs.close() ;
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} }
+			
+			if (stmt != null) {
+				try {
+					stmt.close();
+				} catch (SQLException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
 		}
 		
 		out.println("<br />Test A Thread ID : " + Thread.currentThread().getId());

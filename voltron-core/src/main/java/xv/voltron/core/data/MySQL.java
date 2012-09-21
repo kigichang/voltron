@@ -21,9 +21,9 @@ public class MySQL<T extends Model> extends Operator<T> {
 	
 	public MySQL(Class<T> clazz) throws SQLException {
 		super(clazz);
-
 	}
 	
+	/*
 	@Override
 	public int add(T model) throws SQLException {
 		// TODO Auto-generated method stub
@@ -334,8 +334,5 @@ public class MySQL<T extends Model> extends Operator<T> {
 		select.setLength(select.length() - 1);
 		return find(select.toString(), condition, values);
 	}
-
-	
-	
-
+	*/
 }

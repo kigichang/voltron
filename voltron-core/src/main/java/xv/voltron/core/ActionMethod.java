@@ -17,12 +17,13 @@ public class ActionMethod {
 	public ActionMethod(Method method, ArgumentPolicy strict, int strictLength) {
 		this.invokeMethod = method;
 		Class<?>[] tmp = invokeMethod.getParameterTypes();
-		types = new DataType[tmp.length];
-		for (int i = 0, len = tmp.length; i < len; i++) {
-			types[i] = DataType.valueOf(tmp[i]);
+		this.parameterLength = tmp.length - 2;
+		types = new DataType[parameterLength];
+		for (int i = 0; i < parameterLength; i++) {
+			types[i] = DataType.valueOf(tmp[i + 2]);
 		}
 		this.strict = strict;
-		this.parameterLength = types.length - 2;
+		
 		this.strictLength = strictLength;
 	}
 	

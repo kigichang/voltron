@@ -5,12 +5,19 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.Properties;
 
 import javax.naming.InitialContext;
 import javax.naming.NameClassPair;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
+
+import org.apache.commons.dbcp.ConnectionFactory;
+import org.apache.commons.dbcp.DriverManagerConnectionFactory;
+import org.apache.commons.dbcp.PoolableConnectionFactory;
+import org.apache.commons.dbcp.PoolingDataSource;
+import org.apache.commons.pool.impl.GenericObjectPool;
 
 import xv.voltron.constant.Const;
 import xv.voltron.core.data.Operator;
@@ -24,9 +31,72 @@ public final class DataManager {
 	protected static HashMap<String, Connection> persistents = null;
 	//protected static String[] names = null;
 	
+	private DataSource setupDataSource(String source) throws ClassNotFoundException {
+		Class.forName(Config.get("app.data." + source + ".class"));
+		
+		ConnectionFactory connectionFactory =
+				new DriverManagerConnectionFactory(
+						Config.get("app.data." + source + ".uri"),
+						Config.get("app.data." + source + ".user"),
+						Config.get("app.data." + source + ".password"));
+		
+		GenericObjectPool connectionPool = new GenericObjectPool(
+				null,
+				Config.getInt("app.data." + source + ".maxActive", 
+						GenericObjectPool.DEFAULT_MAX_ACTIVE),
+						
+                Config.getByte("app.data." + source + ".whenExhaustedAction", 
+                		GenericObjectPool.WHEN_EXHAUSTED_BLOCK),
+                
+                Config.getLong("app.data." + source + ".maxWait",
+                		GenericObjectPool.DEFAULT_MAX_WAIT),
+                
+                Config.getInt("app.data." + source + ".maxIdle",
+                		GenericObjectPool.DEFAULT_MAX_IDLE),
+               
+                Config.getInt("app.data." + source + ".minIdle",
+                		GenericObjectPool.DEFAULT_MIN_IDLE),
+                
+                Config.getBoolean("app.data." + source + ".testOnBorrow",
+                		GenericObjectPool.DEFAULT_TEST_ON_BORROW),
+                		
+                Config.getBoolean("app.data." + source + ".testOnReturn",
+                		GenericObjectPool.DEFAULT_TEST_ON_RETURN),
+                
+                Config.getLong("app.data." + source + ".timeBetweenEvictionRunsMillis",
+                		GenericObjectPool.DEFAULT_TIME_BETWEEN_EVICTION_RUNS_MILLIS),
+                		
+                Config.getInt("app.data." + source + ".numTestsPerEvictionRun",
+                		GenericObjectPool.DEFAULT_NUM_TESTS_PER_EVICTION_RUN),
+                
+                Config.getLong("app.data." + source + ".minEvictableIdleTimeMillis",
+                		GenericObjectPool.DEFAULT_MIN_EVICTABLE_IDLE_TIME_MILLIS),
+                		
+                Config.getBoolean("app.data." + source + ".testWhileIdle",
+                		GenericObjectPool.DEFAULT_TEST_WHILE_IDLE),
+                		
+                Config.getLong("app.data." + source + ".softMinEvictableIdleTimeMillis",
+                		GenericObjectPool.DEFAULT_SOFT_MIN_EVICTABLE_IDLE_TIME_MILLIS),
+                		
+                Config.getBoolean("app.data." + source + ".lifo",
+                		GenericObjectPool.DEFAULT_LIFO)
+                );
+		
+		PoolableConnectionFactory poolableConnectionFactory =
+				new PoolableConnectionFactory(connectionFactory,connectionPool,null,null,false,true);
+		
+		return new PoolingDataSource(connectionPool);
+	}
 	
-	private DataManager() throws NamingException {
-		InitialContext ctx = new InitialContext();
+	
+	private DataManager() throws ClassNotFoundException  {
+		sources = new HashMap<String, DataSource>();
+		String[] tmp = Config.getStringArray("app.data");
+		for (int i = 0, len = tmp.length; i < len; i++) {
+			sources.put(tmp[i], setupDataSource(tmp[i]));
+		}
+		persistents = new HashMap<String, Connection>();
+		/*InitialContext ctx = new InitialContext();
 		sources = new HashMap<String, DataSource>();
 		NamingEnumeration<NameClassPair> e = ctx.list(Const.DATA_PREFIX);
 		boolean found = false;
@@ -51,10 +121,11 @@ public final class DataManager {
 		}
 		//names = tmp.toArray(new String[tmp.size()]);
 		persistents = new HashMap<String, Connection>();
+		*/
 	}
 	
 	public static synchronized DataManager getInstance() 
-			throws NamingException {
+			throws ClassNotFoundException  {
 		
 		if (instance == null) {
 			instance = new DataManager();

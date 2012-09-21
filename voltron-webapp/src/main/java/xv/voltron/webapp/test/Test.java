@@ -20,11 +20,12 @@ import xv.voltron.annotation.Dispatch;
 import xv.voltron.constant.ArgumentPolicy;
 import xv.voltron.constant.Const;
 import xv.voltron.core.Action;
+import xv.voltron.core.ActionServlet;
 import xv.voltron.core.Config;
 import xv.voltron.core.DataManager;
 
 @WebServlet(name="Test", urlPatterns="/test1/*")
-public class Test extends Action {
+public class Test extends Action  {
 	
 	/**
 	 * 
@@ -54,7 +55,7 @@ public class Test extends Action {
 			Statement stmt = conn.createStatement();
 			ResultSet rs = stmt.executeQuery("select * from admin where id = 1");
 			if (rs.next()) {
-				req.setAttribute("name", rs.getString("name"));
+				req.setAttribute("name", rs.getString("name123"));
 			}
 			rs.close();
 			stmt.close();
